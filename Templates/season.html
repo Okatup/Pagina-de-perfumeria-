@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}Perfumes de {{ season|capitalize }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Mejores Perfumes para {{ season|capitalize }}</h1>
+    
+    <div class="row">
+        {% for perfume in perfumes %}
+            <div class="col-md-4 mb-4">
+                <div class="card perfume-card">
+                    <!-- Añadir enlace al perfume individual -->
+                    <a href="/perfume/{{ loop.index0 }}" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% if perfume.name %}
+                                    {{ perfume.name }}
+                                {% elif perfume.title %}
+                                    {{ perfume.title }}
+                                {% else %}
+                                    Perfume
+                                {% endif %}
+                            </h5>
+                            
+                            {% if perfume.brand %}
+                                <h6 class="card-subtitle mb-2 text-muted">{{ perfume.brand }}</h6>
+                            {% endif %}
+                            
+                            {% if perfume[season] %}
+                                <div class="progress mb-3 mt-3">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ perfume[season] }}%;" 
+                                         aria-valuenow="{{ perfume[season] }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ perfume[season] }}%
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if perfume.rating %}
+                                <p class="card-text">
+                                    <strong>Rating:</strong> {{ perfume.rating }}
+                                    {% for i in range(5) %}
+                                        {% if i < perfume.rating|int %}
+                                            <span class="text-warning">★</span>
+                                        {% else %}
+                                            <span class="text-secondary">☆</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {% if perfume.name %}
+        {{ perfume.name }}
+    {% elif perfume.title %}
+        {{ perfume.title }}
+    {% else %}
+        Detalles del Perfume
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="card-title">
+                        {% if perfume.name %}
+                            {{ perfume.name }}
+                        {% elif perfume.title %}
+                            {{ perfume.title }}
+                        {% else %}
+                            Perfume
+                        {% endif %}
+                    </h1>
+                    
+                    {% if perfume.brand %}
+                        <h4 class="card-subtitle mb-3 text-muted">{{ perfume.brand }}</h4>
+                    {% endif %}
+                    
+                    <!-- Rating -->
+                    {% if perfume.rating %}
+                        <div class="mb-4">
+                            <h5>Calificación</h5>
+                            <div class="d-flex align-items-center">
+                                <span class="h4 me-2">{{ perfume.rating }}</span>
+                                <div>
+                                    {% for i in range(5) %}
+                                        {% if i < perfume.rating|int %}
+                                            <span class="text-warning h4">★</span>
+                                        {% else %}
+                                            <span class="text-secondary h4">☆</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Información adicional -->
+                    <div class="row mb-4">
+                        {% if perfume.gender %}
+                            <div class="col-md-4 mb-3">
+                                <h5>Género</h5>
+                                <p>{{ perfume.gender }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if perfume.year %}
+                            <div class="col-md-4 mb-3">
+                                <h5>Año</h5>
+                                <p>{{ perfume.year }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if perfume.concentration %}
+                            <div class="col-md-4 mb-3">
+                                <h5>Concentración</h5>
+                                <p>{{ perfume.concentration }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Temporadas -->
+                    {% if seasons %}
+                        <div class="mb-4">
+                            <h5>Puntuación por temporada</h5>
+                            <div class="row">
+                                {% for season, score in seasons.items() %}
+                                    <div class="col-md-3 mb-2">
+                                        <strong>
+                                            {% if season == 'spring' %}
+                                                Primavera
+                                            {% elif season == 'summer' %}
+                                                Verano
+                                            {% elif season == 'fall' %}
+                                                Otoño
+                                            {% elif season == 'winter' %}
+                                                Invierno
+                                            {% else %}
+                                                {{ season|capitalize }}
+                                            {% endif %}
+                                        </strong>
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar" role="progressbar" 
+                                                style="width: {{ score }}%;" 
+                                                aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ score }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Notas -->
+                    {% if perfume.notes %}
+                        <div class="mb-4">
+                            <h5>Notas olfativas</h5>
+                            <div>
+                                {% if perfume.notes is string %}
+                                    <!-- Intento de parsear JSON -->
+                                    {% if '{' in perfume.notes and '}' in perfume.notes %}
+                                        <!-- Asumimos que es JSON pero no podemos usar tojson/fromjson directamente -->
+                                        <!-- Visualización simple -->
+                                        <div class="alert alert-info">
+                                            {{ perfume.notes }}
+                                        </div>
+                                    {% else %}
+                                        <!-- Asumimos que es una lista separada por comas -->
+                                        {% set notes_list = perfume.notes.split(',') %}
+                                        {% for note in notes_list %}
+                                            <span class="badge bg-light text-dark p-2 m-1">{{ note.strip() }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% elif perfume.notes is mapping %}
+                                    {% for note, strength in perfume.notes.items() %}
+                                        <span class="badge bg-light text-dark p-2 m-1">{{ note }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Perfumes similares -->
+            {% if similar_perfumes %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Perfumes similares</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for perfume in similar_perfumes %}
+                                <li class="list-group-item">
+                                    <a href="/perfume/{{ loop.index0 }}" class="text-decoration-none">
+                                        <div>
+                                            <strong>
+                                                {% if perfume.name %}
+                                                    {{ perfume.name }}
+                                                {% elif perfume.title %}
+                                                    {{ perfume.title }}
+                                                {% else %}
+                                                    Perfume
+                                                {% endif %}
+                                            </strong>
+                                        </div>
+                                        {% if perfume.brand %}
+                                            <div class="text-muted">{{ perfume.brand }}</div>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
+{% endblock %}

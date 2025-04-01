@@ -1,0 +1,29 @@
+<!-- templates/error.html -->
+{% extends "layout.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Ha ocurrido un error</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="https://via.placeholder.com/150?text=Error" class="img-fluid mb-3" alt="Error">
+                        <h5>{{ message }}</h5>
+                        <p class="text-muted">{{ suggestion }}</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="/" class="btn btn-primary">Volver al inicio</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

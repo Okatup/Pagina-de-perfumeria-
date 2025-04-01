@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}Resultados de búsqueda: {{ query }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Resultados para "{{ query }}"</h1>
+    
+    {% if results %}
+        <p>Se encontraron {{ results|length }} resultados.</p>
+        
+        <div class="row">
+            {% for perfume in results %}
+                <div class="col-md-4 mb-4">
+                    <div class="card perfume-card">
+                        <!-- Añadir enlace al perfume individual -->
+                        <a href="/perfume/{{ loop.index0 }}" class="text-decoration-none text-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {% if perfume.name %}
+                                        {{ perfume.name }}
+                                    {% elif perfume.title %}
+                                        {{ perfume.title }}
+                                    {% else %}
+                                        Perfume
+                                    {% endif %}
+                                </h5>
+                                
+                                {% if perfume.brand %}
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ perfume.brand }}</h6>
+                                {% endif %}
+                                
+                                {% if perfume.rating %}
+                                    <p class="card-text">
+                                        <strong>Rating:</strong> {{ perfume.rating }}
+                                        {% for i in range(5) %}
+                                            {% if i < perfume.rating|int %}
+                                                <span class="text-warning">★</span>
+                                            {% else %}
+                                                <span class="text-secondary">☆</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </p>
+                                {% endif %}
+                                
+                                {% if perfume.gender %}
+                                    <p class="card-text"><strong>Género:</strong> {{ perfume.gender }}</p>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No se encontraron perfumes para "{{ query }}". Intenta con otra búsqueda.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

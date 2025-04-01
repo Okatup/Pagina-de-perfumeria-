@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}MisPerfumes - Inicio{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4">Encuentra tu perfume ideal</h1>
+        <p class="lead">Descubre recomendaciones personalizadas según la temporada y tus notas favoritas</p>
+        <p>Nuestra base de datos contiene {{ perfumes_count }} perfumes</p>
+    </div>
+</section>
+
+<div class="container">
+    <h2 class="text-center mb-4">Perfumes por Temporada</h2>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card season-card" onclick="location.href='/season/spring'">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Primavera</h3>
+                    <p class="card-text">Fragancias florales y frescas para la temporada de renovación</p>
+                    <img src="https://via.placeholder.com/150?text=Primavera" class="img-fluid rounded-circle mb-3" alt="Primavera">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card season-card" onclick="location.href='/season/summer'">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Verano</h3>
+                    <p class="card-text">Aromas cítricos y ligeros perfectos para los días calurosos</p>
+                    <img src="https://via.placeholder.com/150?text=Verano" class="img-fluid rounded-circle mb-3" alt="Verano">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card season-card" onclick="location.href='/season/fall'">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Otoño</h3>
+                    <p class="card-text">Fragancias especiadas y amaderadas para días más frescos</p>
+                    <img src="https://via.placeholder.com/150?text=Otoño" class="img-fluid rounded-circle mb-3" alt="Otoño">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card season-card" onclick="location.href='/season/winter'">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Invierno</h3>
+                    <p class="card-text">Aromas cálidos y envolventes para la temporada más fría</p>
+                    <img src="https://via.placeholder.com/150?text=Invierno" class="img-fluid rounded-circle mb-3" alt="Invierno">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="text-center mb-4 mt-5">Notas Populares</h2>
+    
+    <div class="text-center mb-5">
+        {% for note in top_notes %}
+            <span class="badge note-badge p-2">{{ note }}</span>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-5">
+        <a href="/notes" class="btn btn-primary btn-lg">Explorar por Notas</a>
+    </div>
+</div>
+{% endblock %}

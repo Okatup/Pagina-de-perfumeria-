@@ -1,0 +1,68 @@
+{
+    "for women": [
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women"
+        }
+    ],
+    "for women and men": [
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women and men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women and men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women and men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women and men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for women and men"
+        }
+    ],
+    "for men": [
+        {
+            "Rating Value": 5.0,
+            "Gender": "for men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for men"
+        },
+        {
+            "Rating Value": 5.0,
+            "Gender": "for men"
+        }
+    ]
+}
