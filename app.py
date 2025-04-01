@@ -175,10 +175,82 @@ def api_season(season):
     else:
         return jsonify({"error": "Season not found"}), 404
 
+# NUEVA FUNCIÓN: Generador de URLs de imágenes para perfumes
+def get_perfume_image_url(perfume):
+    """
+    Genera una URL de imagen para un perfume.
+    Intenta usar nombres de marca y perfume para crear una URL representativa.
+    """
+    # Extraer nombre y marca
+    name = ""
+    brand = ""
+    
+    if 'name' in perfume and perfume['name']:
+        name = str(perfume['name']).strip()
+    elif 'title' in perfume and perfume['title']:
+        name = str(perfume['title']).strip()
+    
+    if 'brand' in perfume and perfume['brand']:
+        brand = str(perfume['brand']).strip()
+    
+    # Determinar el género para colores
+    gender = ""
+    if 'gender' in perfume:
+        gender = str(perfume['gender']).lower() if perfume['gender'] else ""
+    
+    # Colores basados en género
+    bg_color = "87CEEB"  # Azul claro por defecto
+    text_color = "000000"  # Negro
+    
+    if "masculino" in gender or "men" in gender or "male" in gender or "homme" in gender:
+        bg_color = "4682B4"  # Azul acero
+    elif "femenino" in gender or "women" in gender or "female" in gender or "femme" in gender:
+        bg_color = "FF69B4"  # Rosa
+    elif "unisex" in gender or "neutral" in gender:
+        bg_color = "9370DB"  # Púrpura medio
+    
+    # Crear texto para la imagen placeholder
+    display_text = ""
+    if brand and name:
+        if brand in name:
+            display_text = name
+        else:
+            display_text = f"{brand} {name}"
+    elif name:
+        display_text = name
+    elif brand:
+        display_text = brand
+    else:
+        display_text = "Perfume"
+    
+    # Limitar longitud
+    if len(display_text) > 30:
+        display_text = display_text[:27] + "..."
+    
+    # Escapar caracteres especiales
+    import urllib.parse
+    display_text = urllib.parse.quote_plus(display_text)
+    
+    # Generar URL de placeholder
+    placeholder_url = f"https://via.placeholder.com/300x400/{bg_color}/{text_color}?text={display_text}"
+    
+    # Alternativa: intentar URL de una API de imágenes externa (opcional)
+    image_url = ""
+    try:
+        # Esta es una API ficticia para el ejemplo - tendrías que usar una real
+        # Ejemplo: search_term = f"{brand} {name} perfume bottle"
+        # image_url = f"https://some-image-api.com/search?q={search_term}"
+        pass
+    except:
+        pass
+    
+    # Usar placeholder si no hay imagen externa
+    if not image_url:
+        image_url = placeholder_url
+    
+    return image_url
 
-
-
-#Ruta para obtener recomendaciones de género
+# FUNCIÓN ACTUALIZADA: Detalles de perfume
 @app.route('/perfume/<int:perfume_id>')
 def perfume_detail(perfume_id):
     """Vista detallada de un perfume específico"""
@@ -196,6 +268,9 @@ def perfume_detail(perfume_id):
         perfume = perfumes[perfume_id]
     
     if perfume:
+        # Obtener URL de imagen para el perfume
+        image_url = get_perfume_image_url(perfume)
+        
         # Encontrar perfumes similares (por marca o notas)
         similar_perfumes = []
         
@@ -264,12 +339,12 @@ def perfume_detail(perfume_id):
         return render_template('perfume_detail.html', 
                                perfume=perfume,
                                similar_perfumes=similar_perfumes[:5],
-                               seasons=seasons_data)
+                               seasons=seasons_data,
+                               image_url=image_url)  # AÑADIR LA URL DE LA IMAGEN
     else:
         return render_template('error.html', 
                               message=f"No se encontró el perfume con ID {perfume_id}",
                               suggestion="Prueba buscando por nombre o marca")
-
 
 if __name__ == '__main__':
     app.run(debug=True)
