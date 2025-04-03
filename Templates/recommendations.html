@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block title %}Recomendaciones Personalizadas - MisPerfumes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Tus Perfumes Recomendados</h1>
+    <p class="lead text-center mb-5">Basados en tus preferencias personales</p>
+    
+    <!-- Resumen de preferencias -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Tus preferencias</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Género:</strong> 
+                        {% if preferences.gender_preference == 'male' %}
+                            Masculino
+                        {% elif preferences.gender_preference == 'female' %}
+                            Femenino
+                        {% else %}
+                            Unisex
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Temporada:</strong> 
+                        {% if preferences.season == 'spring' %}
+                            Primavera
+                        {% elif preferences.season == 'summer' %}
+                            Verano
+                        {% elif preferences.season == 'fall' %}
+                            Otoño
+                        {% elif preferences.season == 'winter' %}
+                            Invierno
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Presupuesto:</strong> 
+                        {% if preferences.budget == 'low' %}
+                            Económico (hasta 50€)
+                        {% elif preferences.budget == 'medium' %}
+                            Medio (50€-100€)
+                        {% elif preferences.budget == 'high' %}
+                            Premium (100€-200€)
+                        {% elif preferences.budget == 'luxury' %}
+                            Lujo (más de 200€)
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="col-md-6">
+                    {% if preferences.preferred_notes %}
+                        <p><strong>Notas preferidas:</strong></p>
+                        <div>
+                            {% for note in preferences.preferred_notes %}
+                                <span class="badge bg-primary me-2 mb-2">{{ note }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="/preferences" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Modificar preferencias
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resultados de recomendación -->
+    {% if recommendations %}
+        <div class="row">
+            {% for perfume in recommendations %}
+                <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <!-- Imagen del perfume -->
+                        <div class="text-center pt-3">
+                            <img src="{{ perfume.image_url }}" alt="Imagen de {{ perfume.name }}" 
+                                class="img-fluid" style="max-height: 180px;">
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Marca y nombre -->
+                            {% if perfume.brand %}
+                                <div class="small text-uppercase text-muted mb-1">{{ perfume.brand }}</div>
+                            {% endif %}
+                            
+                            <h5 class="card-title mb-3">{{ perfume.name }}</h5>
+                            
+                            <!-- Porcentaje de coincidencia -->
+                            {% set match_percentage = (perfume.score * 100)|int %}
+                            <div class="mb-2">
+                                <span class="badge {% if match_percentage > 80 %}bg-success{% elif match_percentage > 60 %}bg-primary{% else %}bg-info{% endif %}">
+                                    {{ match_percentage }}% coincidencia
+                                </span>
+                            </div>
+                            
+                            <!-- Barra de progreso -->
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-success" 
+                                    role="progressbar" 
+                                    style="width: {{ match_percentage }}%;" 
+                                    aria-valuenow="{{ match_percentage }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                            
+                            <!-- Notas principales -->
+                            {% if perfume.notes %}
+                                <div class="small mb-2">
+                                    <strong>Notas:</strong> 
+                                    {% for note in perfume.notes[:3] %}
+                                        {{ note }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                    {% if perfume.notes|length > 3 %}...{% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Compatibilidad por aspecto -->
+                            <div class="d-flex justify-content-between mb-2 small text-muted">
+                                <div>
+                                    <i class="bi bi-droplet"></i> 
+                                    {{ (perfume.note_match * 100)|int }}%
+                                </div>
+                                <div>
+                                    <i class="bi bi-calendar3"></i> 
+                                    {{ (perfume.season_match * 100)|int }}%
+                                </div>
+                            </div>
+                            
+                            <!-- Rating -->
+                            {% if perfume.rating %}
+                                <div class="small mb-2">
+                                    <span class="text-muted">Rating: </span>
+                                    <span class="text-warning">
+                                    {% for i in range(5) %}
+                                        {% if i < perfume.rating|float %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                    </span>
+                                    <span class="text-muted">({{ perfume.rating }})</span>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Género -->
+                            {% if perfume.gender %}
+                                <div class="small mb-0">
+                                    <span class="text-muted">
+                                        {% if perfume.gender|lower in ['masculino', 'male', 'hombre', 'men'] %}
+                                            <i class="bi bi-gender-male"></i> Masculino
+                                        {% elif perfume.gender|lower in ['femenino', 'female', 'mujer', 'women'] %}
+                                            <i class="bi bi-gender-female"></i> Femenino
+                                        {% else %}
+                                            <i class="bi bi-gender-ambiguous"></i> Unisex
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Footer con precio y enlace a detalles -->
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if perfume.price %}
+                                    <span class="fw-bold">{{ perfume.price }}€</span>
+                                {% else %}
+                                    <span></span>
+                                {% endif %}
+                                
+                                <a href="/perfume/{{ perfume.id }}" class="btn btn-sm btn-outline-primary">Ver detalles</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Mensaje cuando no hay recomendaciones -->
+        <div class="alert alert-info text-center">
+            <h4 class="alert-heading">No encontramos recomendaciones</h4>
+            <p>No se encontraron perfumes que coincidan con tus preferencias. Intenta ajustar tus criterios de búsqueda.</p>
+            <hr>
+            <a href="/preferences" class="btn btn-primary mt-2">Modificar preferencias</a>
+        </div>
+    {% endif %}
+    
+    <!-- Enlaces adicionales -->
+    <div class="text-center mt-5 mb-5">
+        <a href="/" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-house"></i> Volver al inicio
+        </a>
+        <a href="/notes" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-search"></i> Explorar por notas
+        </a>
+    </div>
+</div>
+{% endblock %}

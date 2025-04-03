@@ -3,11 +3,28 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 import random
+from recommender import PerfumeRecommender
 
 app = Flask(__name__)
 
+# Variables globales para almacenar datos en caché
+_perfumes = None
+_seasonal = None
+_notes = None
+_gender = None
+recommender = None
+
 # Cargar los datos
 def load_data():
+    global _perfumes, _seasonal, _notes, _gender
+    
+    # Si los datos ya están cargados, devolverlos sin volver a procesar
+    if _perfumes is not None:
+        print("Usando datos en caché...")
+        return _perfumes, _seasonal, _notes, _gender
+    
+    print("Cargando datos por primera vez...")
+    
     # Inicializar con valores vacíos
     perfumes = []
     seasonal = {}
@@ -94,88 +111,15 @@ def load_data():
     except FileNotFoundError:
         print("Advertencia: No se encontró gender_recommendations.json")
     
+    # Guardar en variables globales para caché
+    _perfumes = perfumes
+    _seasonal = seasonal
+    _notes = notes
+    _gender = gender
+    
     return perfumes, seasonal, notes, gender
 
-# Rutas
-@app.route('/')
-def home():
-    perfumes, seasonal, notes, gender = load_data()
-    
-    # Obtener las temporadas disponibles
-    seasons = list(seasonal.keys()) if seasonal else []
-    
-    # Obtener las notas más comunes
-    top_notes = list(notes.get('top_notes', {}).keys())[:10] if notes else []
-    
-    return render_template('index.html', 
-                          perfumes_count=len(perfumes),
-                          seasons=seasons,
-                          top_notes=top_notes)
-
-@app.route('/season/<season>')
-def season_perfumes(season):
-    perfumes, seasonal, notes, gender = load_data()
-    
-    if seasonal and season in seasonal:
-        recommendations = seasonal[season]
-        return render_template('season.html', 
-                              season=season,
-                              perfumes=recommendations)
-    else:
-        # Si no hay datos para esta temporada, mostrar mensaje
-        return render_template('error.html', 
-                              message=f"No se encontraron datos para la temporada {season}",
-                              suggestion="Prueba con otra temporada o regresa al inicio")
-
-@app.route('/notes')
-def notes_page():
-    perfumes, seasonal, notes_data, gender = load_data()
-    
-    return render_template('notes.html', 
-                          notes=notes_data.get('top_notes', {}))
-
-@app.route('/search')
-def search():
-    query = request.args.get('q', '').lower()
-    perfumes, seasonal, notes, gender = load_data()
-    
-    results = []
-    for perfume in perfumes:
-        name_match = False
-        brand_match = False
-        
-        # Verificar coincidencia en nombre
-        if 'name' in perfume and isinstance(perfume['name'], str):
-            name_match = query in perfume['name'].lower()
-        elif 'title' in perfume and isinstance(perfume['title'], str):
-            name_match = query in perfume['title'].lower()
-        
-        # Verificar coincidencia en marca
-        if 'brand' in perfume and isinstance(perfume['brand'], str):
-            brand_match = query in perfume['brand'].lower()
-        
-        if name_match or brand_match:
-            results.append(perfume)
-    
-    return render_template('search_results.html',
-                          query=query,
-                          results=results[:20])  # Limitar a 20 resultados
-
-@app.route('/api/perfumes')
-def api_perfumes():
-    perfumes, seasonal, notes, gender = load_data()
-    return jsonify(perfumes[:50])  # Limitar a 50 para no sobrecargar
-
-@app.route('/api/recommendations/season/<season>')
-def api_season(season):
-    perfumes, seasonal, notes, gender = load_data()
-    
-    if seasonal and season in seasonal:
-        return jsonify(seasonal[season])
-    else:
-        return jsonify({"error": "Season not found"}), 404
-
-# NUEVA FUNCIÓN: Generador de URLs de imágenes para perfumes
+# FUNCIÓN: Generador de URLs de imágenes para perfumes
 def get_perfume_image_url(perfume):
     """
     Genera una URL de imagen para un perfume.
@@ -250,7 +194,100 @@ def get_perfume_image_url(perfume):
     
     return image_url
 
-# FUNCIÓN ACTUALIZADA: Detalles de perfume
+# Rutas
+@app.route('/')
+def home():
+    perfumes, seasonal, notes, gender = load_data()
+    
+    # Obtener las temporadas disponibles
+    seasons = list(seasonal.keys()) if seasonal else []
+    
+    # Obtener las notas más comunes
+    top_notes = list(notes.get('top_notes', {}).keys())[:10] if notes else []
+    
+    return render_template('index.html', 
+                          perfumes_count=len(perfumes),
+                          seasons=seasons,
+                          top_notes=top_notes)
+
+@app.route('/season/<season>')
+def season_perfumes(season):
+    perfumes, seasonal, notes, gender = load_data()
+    
+    if seasonal and season in seasonal:
+        recommendations = seasonal[season]
+        
+        # Asegurarse de que todos los perfumes tienen un valor para la temporada
+        for perfume in recommendations:
+            if season not in perfume or not perfume[season]:
+                perfume[season] = 0
+        
+        # Ordenar por valoración de temporada (de mayor a menor)
+        recommendations = sorted(
+            recommendations, 
+            key=lambda x: float(x.get(season, 0)) if isinstance(x.get(season), (int, float, str)) and str(x.get(season)).replace('.', '', 1).isdigit() else 0, 
+            reverse=True
+        )
+        
+        # Pasar la función de imagen a la plantilla
+        return render_template('season.html', 
+                              season=season,
+                              perfumes=recommendations,
+                              get_perfume_image_url=get_perfume_image_url)
+    else:
+        # Si no hay datos para esta temporada, mostrar mensaje
+        return render_template('error.html', 
+                              message=f"No se encontraron datos para la temporada {season}",
+                              suggestion="Prueba con otra temporada o regresa al inicio")
+
+@app.route('/notes')
+def notes_page():
+    perfumes, seasonal, notes_data, gender = load_data()
+    
+    return render_template('notes.html', 
+                          notes=notes_data.get('top_notes', {}))
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '').lower()
+    perfumes, seasonal, notes, gender = load_data()
+    
+    results = []
+    for perfume in perfumes:
+        name_match = False
+        brand_match = False
+        
+        # Verificar coincidencia en nombre
+        if 'name' in perfume and isinstance(perfume['name'], str):
+            name_match = query in perfume['name'].lower()
+        elif 'title' in perfume and isinstance(perfume['title'], str):
+            name_match = query in perfume['title'].lower()
+        
+        # Verificar coincidencia en marca
+        if 'brand' in perfume and isinstance(perfume['brand'], str):
+            brand_match = query in perfume['brand'].lower()
+        
+        if name_match or brand_match:
+            results.append(perfume)
+    
+    return render_template('search_results.html',
+                          query=query,
+                          results=results[:20])  # Limitar a 20 resultados
+
+@app.route('/api/perfumes')
+def api_perfumes():
+    perfumes, seasonal, notes, gender = load_data()
+    return jsonify(perfumes[:50])  # Limitar a 50 para no sobrecargar
+
+@app.route('/api/recommendations/season/<season>')
+def api_season(season):
+    perfumes, seasonal, notes, gender = load_data()
+    
+    if seasonal and season in seasonal:
+        return jsonify(seasonal[season])
+    else:
+        return jsonify({"error": "Season not found"}), 404
+
 @app.route('/perfume/<int:perfume_id>')
 def perfume_detail(perfume_id):
     """Vista detallada de un perfume específico"""
@@ -340,11 +377,68 @@ def perfume_detail(perfume_id):
                                perfume=perfume,
                                similar_perfumes=similar_perfumes[:5],
                                seasons=seasons_data,
-                               image_url=image_url)  # AÑADIR LA URL DE LA IMAGEN
+                               image_url=image_url)
     else:
         return render_template('error.html', 
                               message=f"No se encontró el perfume con ID {perfume_id}",
                               suggestion="Prueba buscando por nombre o marca")
+
+# NUEVA RUTA: Cuestionario de preferencias
+@app.route('/preferences')
+def preferences():
+    """Muestra el cuestionario de preferencias para la recomendación personalizada"""
+    perfumes, seasonal, notes, gender = load_data()
+    
+    # Obtener las notas más populares para el cuestionario
+    top_notes = list(notes.get('top_notes', {}).keys())[:15] if notes else [
+        'Vainilla', 'Bergamota', 'Rosa', 'Jazmín', 'Ámbar', 
+        'Pachulí', 'Sándalo', 'Cedro', 'Lavanda', 'Neroli',
+        'Cítricos', 'Almizcle', 'Vetiver', 'Canela', 'Cuero'
+    ]
+    
+    return render_template('preferences.html',
+                          top_notes=top_notes,
+                          perfumes_count=len(perfumes))
+
+# NUEVA RUTA: Procesar formulario y mostrar recomendaciones
+@app.route('/recommend', methods=['POST'])
+def recommend_perfumes():
+    """Procesa el formulario y genera recomendaciones personalizadas"""
+    global recommender
+    
+    # Cargar datos
+    perfumes, seasonal, notes, gender = load_data()
+    
+    # Inicializar el recomendador si no existe
+    if recommender is None:
+        recommender = PerfumeRecommender().load_data(perfumes)
+    
+    # Obtener datos del formulario
+    user_preferences = {
+        'gender_preference': request.form.get('gender_preference', 'unisex'),
+        'season': request.form.get('season', 'spring'),
+        'budget': request.form.get('budget', 'medium')
+    }
+    
+    # Procesar notas preferidas (pueden ser múltiples)
+    preferred_notes = request.form.getlist('preferred_notes')
+    if preferred_notes:
+        user_preferences['preferred_notes'] = preferred_notes
+    
+    # Obtener recomendaciones
+    recommendations = recommender.get_recommendations(
+        user_preferences, 
+        num_recommendations=12
+    )
+    
+    # Obtener URLs de imágenes para las recomendaciones
+    for rec in recommendations:
+        rec['image_url'] = get_perfume_image_url(rec)
+    
+    # Renderizar plantilla de resultados
+    return render_template('recommendations.html',
+                          preferences=user_preferences,
+                          recommendations=recommendations)
 
 if __name__ == '__main__':
     app.run(debug=True)
