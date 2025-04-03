@@ -6,89 +6,388 @@
 <div class="container mt-5">
     <h1 class="mb-4">Resultados para "{{ query }}"</h1>
     
-    {% if results %}
-        <p>Se encontraron {{ results|length }} resultados.</p>
-        
-        <div class="row">
-            {% for perfume in results %}
-                <div class="col-md-4 mb-4">
-                    <div class="card perfume-card h-100">
-                        <!-- Usar ID de perfume si está disponible, o índice como fallback -->
-                        <a href="/perfume/{% if perfume.perfume_id %}{{ perfume.perfume_id }}{% else %}{{ loop.index0 }}{% endif %}" class="text-decoration-none text-dark">
-                            <!-- Imagen del perfume -->
-                            <div class="text-center p-3">
-                                <img src="{{ get_perfume_image_url(perfume) }}" class="card-img-top perfume-image" alt="Imagen del perfume" style="max-height: 200px; object-fit: contain;">
+    <div class="row">
+        <!-- Columna lateral de filtros -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form" method="get" action="{{ url_for('search') }}">
+                        <input type="hidden" name="q" value="{{ query }}">
+                        
+                        <!-- Género -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Género</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="gender" value="women" id="gender-women" {% if 'women' in selected_filters.gender %}checked{% endif %}>
+                                <label class="form-check-label" for="gender-women">Femenino</label>
                             </div>
-                            
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    {% if perfume.Brand and perfume.Perfume %}
-                                        {{ perfume.Brand }} {{ perfume.Perfume }}
-                                    {% elif perfume.name %}
-                                        {{ perfume.name }}
-                                    {% else %}
-                                        Perfume
-                                    {% endif %}
-                                </h5>
-                                
-                                {% if perfume.Brand %}
-                                    <h6 class="card-subtitle mb-2 text-muted">{{ perfume.Brand }}</h6>
-                                {% endif %}
-                                
-                                {% if perfume['Rating Value'] %}
-                                    <p class="card-text">
-                                        <strong>Rating:</strong> 
-                                        {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
-                                        {{ rating }}
-                                        {% for i in range(1, 6) %}
-                                            {% if i <= (rating|float)|round(0, 'floor') %}
-                                                <span class="text-warning">★</span>
-                                            {% else %}
-                                                <span class="text-secondary">☆</span>
-                                            {% endif %}
-                                        {% endfor %}
-                                        ({{ perfume['Rating Count'] }})
-                                    </p>
-                                {% endif %}
-                                
-                                {% if perfume.Gender %}
-                                    <p class="card-text"><strong>Género:</strong> {{ perfume.Gender }}</p>
-                                {% endif %}
-                                
-                                {% if perfume.Year %}
-                                    <p class="card-text"><strong>Año:</strong> {{ perfume.Year|int }}</p>
-                                {% endif %}
-                                
-                                <!-- Notas principales -->
-                                {% if perfume.mainaccord1 or perfume.mainaccord2 or perfume.mainaccord3 %}
-                                    <p class="card-text"><strong>Notas principales:</strong></p>
-                                    <div class="mb-2">
-                                        {% if perfume.mainaccord1 %}
-                                            <span class="badge bg-primary">{{ perfume.mainaccord1 }}</span>
-                                        {% endif %}
-                                        {% if perfume.mainaccord2 %}
-                                            <span class="badge bg-info">{{ perfume.mainaccord2 }}</span>
-                                        {% endif %}
-                                        {% if perfume.mainaccord3 %}
-                                            <span class="badge bg-secondary">{{ perfume.mainaccord3 }}</span>
-                                        {% endif %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="gender" value="men" id="gender-men" {% if 'men' in selected_filters.gender %}checked{% endif %}>
+                                <label class="form-check-label" for="gender-men">Masculino</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="gender" value="unisex" id="gender-unisex" {% if 'unisex' in selected_filters.gender %}checked{% endif %}>
+                                <label class="form-check-label" for="gender-unisex">Unisex</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Valoración mínima -->
+                        <div class="mb-3">
+                            <label for="min-rating" class="form-label fw-bold">Valoración mínima</label>
+                            <select class="form-select" id="min-rating" name="min_rating">
+                                <option value="">Cualquiera</option>
+                                <option value="4.0" {% if selected_filters.min_rating == '4.0' %}selected{% endif %}>4+ estrellas</option>
+                                <option value="3.5" {% if selected_filters.min_rating == '3.5' %}selected{% endif %}>3.5+ estrellas</option>
+                                <option value="3.0" {% if selected_filters.min_rating == '3.0' %}selected{% endif %}>3+ estrellas</option>
+                                <option value="2.5" {% if selected_filters.min_rating == '2.5' %}selected{% endif %}>2.5+ estrellas</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Número mínimo de valoraciones -->
+                        <div class="mb-3">
+                            <label for="min-votes" class="form-label fw-bold">Mínimo de valoraciones</label>
+                            <select class="form-select" id="min-votes" name="min_votes">
+                                <option value="">Cualquiera</option>
+                                <option value="100" {% if selected_filters.min_votes == '100' %}selected{% endif %}>100+ valoraciones</option>
+                                <option value="50" {% if selected_filters.min_votes == '50' %}selected{% endif %}>50+ valoraciones</option>
+                                <option value="20" {% if selected_filters.min_votes == '20' %}selected{% endif %}>20+ valoraciones</option>
+                                <option value="10" {% if selected_filters.min_votes == '10' %}selected{% endif %}>10+ valoraciones</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Rango de años -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Año de lanzamiento</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="year-from" name="year_from" 
+                                           placeholder="Desde" min="1900" max="2025" 
+                                           value="{% if selected_filters.year_from %}{{ selected_filters.year_from }}{% endif %}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" id="year-to" name="year_to" 
+                                           placeholder="Hasta" min="1900" max="2025"
+                                           value="{% if selected_filters.year_to %}{{ selected_filters.year_to }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notas principales -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Notas principales</label>
+                            <div class="row">
+                                {% for note in popular_notes %}
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="notes" value="{{ note }}" id="note-{{ loop.index }}" {% if note in selected_filters.notes %}checked{% endif %}>
+                                        <label class="form-check-label" for="note-{{ loop.index }}">{{ note }}</label>
                                     </div>
-                                {% endif %}
+                                </div>
+                                {% endfor %}
                             </div>
-                        </a>
+                            {% if popular_notes|length > 0 %}
+                            <div class="mt-2 small">
+                                <a href="#" id="show-more-notes">Ver más notas...</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Aplicar filtros</button>
+                            <a href="{{ url_for('search', q=query) }}" class="btn btn-outline-secondary">Limpiar filtros</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna principal de resultados -->
+        <div class="col-lg-9">
+            {% if results %}
+                <p>Se encontraron {{ total_results }} resultados. Mostrando página {{ current_page }} de {{ total_pages }}.</p>
+                
+                <!-- Opciones de ordenación -->
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ordenar por: {% if sort_by == 'rating' %}Valoración{% elif sort_by == 'year' %}Año{% elif sort_by == 'votes' %}Popularidad{% else %}Relevancia{% endif %}
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                            <li><a class="dropdown-item {% if sort_by == 'relevance' %}active{% endif %}" href="{{ url_for('search', q=query, sort='relevance', **filter_params) }}">Relevancia</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'rating' %}active{% endif %}" href="{{ url_for('search', q=query, sort='rating', **filter_params) }}">Valoración</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'votes' %}active{% endif %}" href="{{ url_for('search', q=query, sort='votes', **filter_params) }}">Popularidad</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'year' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year', **filter_params) }}">Año (nuevo a antiguo)</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'year_asc' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year_asc', **filter_params) }}">Año (antiguo a nuevo)</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="btn-group" role="group" aria-label="Vista">
+                        <button type="button" class="btn btn-outline-secondary active" id="grid-view">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="list-view">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
                     </div>
                 </div>
-            {% endfor %}
+                
+                <div class="row" id="results-grid">
+                    {% for perfume in results %}
+                        <div class="col-md-4 col-lg-4 mb-4">
+                            <div class="card perfume-card h-100 shadow-sm hover-shadow">
+                                <!-- Usar ID de perfume si está disponible, o índice como fallback -->
+                                <a href="/perfume/{% if perfume.perfume_id %}{{ perfume.perfume_id }}{% else %}{{ loop.index0 }}{% endif %}" class="text-decoration-none text-dark">
+                                    <!-- Imagen del perfume -->
+                                    <div class="text-center p-3">
+                                        <img src="{{ get_perfume_image_url(perfume) }}" 
+                                             class="card-img-top perfume-image" 
+                                             alt="Imagen de perfume"
+                                             style="height: 200px; object-fit: contain;"
+                                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200/f0f0f0/999999?text=Sin+imagen'; this.alt='Imagen no disponible'">
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate">
+                                            {% if perfume.Brand and perfume.Perfume %}
+                                                {{ perfume.Brand }} {{ perfume.Perfume }}
+                                            {% elif perfume.name %}
+                                                {{ perfume.name }}
+                                            {% else %}
+                                                Perfume
+                                            {% endif %}
+                                        </h5>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="rating">
+                                                {% if perfume['Rating Value'] %}
+                                                    {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+                                                    {% set rating_float = rating|float %}
+                                                    {% for i in range(1, 6) %}
+                                                        {% if i <= rating_float|round(0, 'floor') %}
+                                                            <span class="text-warning">★</span>
+                                                        {% else %}
+                                                            <span class="text-secondary">☆</span>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="ms-1 text-muted small">({{ perfume['Rating Count'] }})</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if perfume.Gender %}
+                                                <span class="badge bg-light text-dark">{{ perfume.Gender }}</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Año -->
+                                        {% if perfume.Year %}
+                                            <div class="small text-muted mb-2">{{ perfume.Year|int }}</div>
+                                        {% endif %}
+                                        
+                                        <!-- Notas principales -->
+                                        <div class="mt-2">
+                                            {% if perfume.mainaccord1 %}
+                                                <span class="badge bg-primary">{{ perfume.mainaccord1 }}</span>
+                                            {% endif %}
+                                            {% if perfume.mainaccord2 %}
+                                                <span class="badge bg-info text-dark">{{ perfume.mainaccord2 }}</span>
+                                            {% endif %}
+                                            {% if perfume.mainaccord3 %}
+                                                <span class="badge bg-secondary">{{ perfume.mainaccord3 }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Vista alternativa de lista (oculta por defecto) -->
+                <div class="d-none" id="results-list">
+                    <div class="list-group">
+                        {% for perfume in results %}
+                            <a href="/perfume/{% if perfume.perfume_id %}{{ perfume.perfume_id }}{% else %}{{ loop.index0 }}{% endif %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 mb-2 mb-md-0">
+                                        <img src="{{ get_perfume_image_url(perfume) }}" 
+                                             class="img-fluid" 
+                                             alt="Imagen de perfume"
+                                             style="max-height: 100px;"
+                                             onerror="this.onerror=null; this.src='https://via.placeholder.com/100x100/f0f0f0/999999?text=Sin+imagen'; this.alt='Imagen no disponible'">
+                                    </div>
+                                    <div class="col-md-10">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h5 class="mb-1">
+                                                {% if perfume.Brand and perfume.Perfume %}
+                                                    {{ perfume.Brand }} {{ perfume.Perfume }}
+                                                {% elif perfume.name %}
+                                                    {{ perfume.name }}
+                                                {% else %}
+                                                    Perfume
+                                                {% endif %}
+                                            </h5>
+                                            <small>
+                                                {% if perfume.Year %}
+                                                    {{ perfume.Year|int }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="mb-1">
+                                            {% if perfume['Rating Value'] %}
+                                                {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+                                                {% set rating_float = rating|float %}
+                                                {% for i in range(1, 6) %}
+                                                    {% if i <= rating_float|round(0, 'floor') %}
+                                                        <span class="text-warning">★</span>
+                                                    {% else %}
+                                                        <span class="text-secondary">☆</span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="ms-1 text-muted">({{ perfume['Rating Count'] }})</span>
+                                            {% endif %}
+                                            <span class="badge bg-light text-dark ms-2">{{ perfume.Gender }}</span>
+                                        </div>
+                                        <small>
+                                            {% if perfume.mainaccord1 %}
+                                                <span class="badge bg-primary">{{ perfume.mainaccord1 }}</span>
+                                            {% endif %}
+                                            {% if perfume.mainaccord2 %}
+                                                <span class="badge bg-info text-dark">{{ perfume.mainaccord2 }}</span>
+                                            {% endif %}
+                                            {% if perfume.mainaccord3 %}
+                                                <span class="badge bg-secondary">{{ perfume.mainaccord3 }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Paginación -->
+                {% if total_pages > 1 %}
+                <nav aria-label="Navegación de resultados">
+                    <ul class="pagination justify-content-center mt-4">
+                        {% if current_page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page-1, **filter_params) }}" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% set start_page = [current_page - 2, 1]|max %}
+                        {% set end_page = [start_page + 4, total_pages + 1]|min %}
+                        {% set start_page = [end_page - 5, 1]|max %}
+                        
+                        {% for page_num in range(start_page, end_page) %}
+                            <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('search', q=query, page=page_num, **filter_params) }}">{{ page_num }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if current_page < total_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page+1, **filter_params) }}" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    No se encontraron perfumes para "{{ query }}" {% if selected_filters %}con los filtros seleccionados{% endif %}. 
+                    {% if selected_filters %}
+                        <a href="{{ url_for('search', q=query) }}" class="alert-link">Intentar sin filtros</a> o prueba con otra búsqueda.
+                    {% else %}
+                        Intenta con otra búsqueda.
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <!-- Botón para volver -->
+            <div class="text-center mt-4 mb-5">
+                <a href="/" class="btn btn-primary">Volver al inicio</a>
+            </div>
         </div>
-    {% else %}
-        <div class="alert alert-info">
-            No se encontraron perfumes para "{{ query }}". Intenta con otra búsqueda.
-        </div>
-    {% endif %}
-    
-    <!-- Botón para volver -->
-    <div class="text-center mt-4 mb-5">
-        <a href="/" class="btn btn-primary">Volver al inicio</a>
     </div>
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.3s ease;
+    }
+    
+    .perfume-card {
+        transition: all 0.3s ease;
+    }
+    
+    .badge {
+        margin-right: 3px;
+    }
+    
+    .form-label.fw-bold {
+        color: #495057;
+    }
+    
+    .card-header {
+        background-color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cambio entre vista de cuadrícula y lista
+        const gridView = document.getElementById('grid-view');
+        const listView = document.getElementById('list-view');
+        const resultsGrid = document.getElementById('results-grid');
+        const resultsList = document.getElementById('results-list');
+        
+        if (gridView && listView && resultsGrid && resultsList) {
+            gridView.addEventListener('click', function() {
+                gridView.classList.add('active');
+                listView.classList.remove('active');
+                resultsGrid.classList.remove('d-none');
+                resultsList.classList.add('d-none');
+            });
+            
+            listView.addEventListener('click', function() {
+                listView.classList.add('active');
+                gridView.classList.remove('active');
+                resultsList.classList.remove('d-none');
+                resultsGrid.classList.add('d-none');
+            });
+        }
+        
+        // Ver más notas (funcionalidad simulada)
+        const showMoreNotesLink = document.getElementById('show-more-notes');
+        if (showMoreNotesLink) {
+            showMoreNotesLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Esta funcionalidad permitiría mostrar más opciones de notas en una ventana modal.');
+            });
+        }
+    });
+</script>
 {% endblock %}

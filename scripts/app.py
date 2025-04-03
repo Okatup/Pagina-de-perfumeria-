@@ -305,6 +305,53 @@ def get_perfume_image_url(perfume):
     
     return placeholder_url
 
+def get_top_rated_perfumes(perfumes, min_ratings=10, limit=8):
+    """
+    Obtiene los perfumes mejor valorados con un mínimo de valoraciones
+    
+    Args:
+        perfumes: Lista de perfumes
+        min_ratings: Número mínimo de valoraciones para considerar un perfume
+        limit: Número máximo de perfumes a devolver
+    
+    Returns:
+        Lista de perfumes mejor valorados
+    """
+    # Filtrar perfumes con al menos min_ratings valoraciones
+    qualified_perfumes = []
+    
+    for perfume in perfumes:
+        # Verificar si tiene Rating Value y Rating Count
+        if 'Rating Value' in perfume and 'Rating Count' in perfume:
+            try:
+                # Convertir Rating Value a float
+                rating_str = str(perfume['Rating Value']).replace(',', '.')
+                rating = float(rating_str)
+                
+                # Convertir Rating Count a int
+                if isinstance(perfume['Rating Count'], (int, float)):
+                    count = int(perfume['Rating Count'])
+                else:
+                    count_str = str(perfume['Rating Count']).strip()
+                    count = int(count_str) if count_str.isdigit() else 0
+                
+                # Filtrar por número mínimo de valoraciones
+                if count >= min_ratings:
+                    # Añadir a la lista con rating y count
+                    perfume_copy = perfume.copy()
+                    perfume_copy['rating_float'] = rating
+                    perfume_copy['rating_count_int'] = count
+                    qualified_perfumes.append(perfume_copy)
+            except (ValueError, TypeError):
+                # Ignorar si hay error al convertir
+                continue
+    
+    # Ordenar por valoración (de mayor a menor)
+    sorted_perfumes = sorted(qualified_perfumes, key=lambda x: x['rating_float'], reverse=True)
+    
+    # Devolver los mejores hasta el límite
+    return sorted_perfumes[:limit]
+
 # Rutas
 @app.route('/')
 def home():
@@ -315,11 +362,16 @@ def home():
     
     # Obtener las notas más comunes
     top_notes = list(notes.get('top_notes', {}).keys())[:10] if notes else []
+
+    # Obtener los perfumes mejor valorados (mínimo 50 valoraciones)
+    top_rated = get_top_rated_perfumes(perfumes, min_ratings=50, limit=8)
     
     return render_template('index.html', 
                           perfumes_count=len(perfumes),
                           seasons=seasons,
-                          top_notes=top_notes)
+                          top_notes=top_notes,
+                          top_rated=top_rated,
+                          get_perfume_image_url=get_perfume_image_url)
 
 @app.route('/season/<season>')
 def season_perfumes(season):
@@ -360,31 +412,291 @@ def notes_page():
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', '').lower()
+    # Obtener parámetros de búsqueda y filtros
+    query = request.args.get('q', '').lower().strip()
+    page = int(request.args.get('page', 1))
+    per_page = 24  # Número de resultados por página
+    
+    # Parámetros de filtro
+    gender_filters = request.args.getlist('gender')
+    min_rating = request.args.get('min_rating', '')
+    min_votes = request.args.get('min_votes', '')
+    year_from = request.args.get('year_from', '')
+    year_to = request.args.get('year_to', '')
+    note_filters = request.args.getlist('notes')
+    sort_by = request.args.get('sort', 'relevance')
+    
+    # Guardar filtros seleccionados para la plantilla
+    selected_filters = {
+        'gender': gender_filters,
+        'min_rating': min_rating,
+        'min_votes': min_votes,
+        'year_from': year_from,
+        'year_to': year_to,
+        'notes': note_filters
+    }
+    
+    # Construir parámetros para enlaces de paginación
+    filter_params = {}
+    if gender_filters:
+        filter_params['gender'] = gender_filters
+    if min_rating:
+        filter_params['min_rating'] = min_rating
+    if min_votes:
+        filter_params['min_votes'] = min_votes
+    if year_from:
+        filter_params['year_from'] = year_from
+    if year_to:
+        filter_params['year_to'] = year_to
+    if note_filters:
+        filter_params['notes'] = note_filters
+    if sort_by != 'relevance':
+        filter_params['sort'] = sort_by
+    
+    if not query:
+        return render_template('search_results.html',
+                               query="",
+                               results=[],
+                               current_page=1,
+                               total_pages=1,
+                               total_results=0,
+                               selected_filters=selected_filters,
+                               filter_params=filter_params,
+                               sort_by=sort_by,
+                               popular_notes=get_popular_notes(10),
+                               get_perfume_image_url=get_perfume_image_url)
+    
     perfumes, seasonal, notes, gender = load_data()
+    
+    # Obtener las notas más populares para los filtros
+    popular_notes_list = get_popular_notes(15)
     
     results = []
     for perfume in perfumes:
+        # Inicializamos un puntaje de coincidencia que nos ayudará a ordenar los resultados
+        match_score = 0
+        match_found = False
+        
+        # Búsqueda en campos principales
         name_match = False
         brand_match = False
         
-        # Verificar coincidencia en nombre
+        # Verificar coincidencia en nombre del perfume
         if 'Perfume' in perfume and isinstance(perfume['Perfume'], str):
-            name_match = query in perfume['Perfume'].lower()
-        elif 'name' in perfume and isinstance(perfume['name'], str):
-            name_match = query in perfume['name'].lower()
+            perfume_name = perfume['Perfume'].lower()
+            if query in perfume_name:
+                name_match = True
+                match_score += 10  # Prioridad alta si coincide con el nombre
+                if query == perfume_name:
+                    match_score += 20  # Coincidencia exacta
+        
+        # Verificar coincidencia en nombre completo
+        if 'name' in perfume and isinstance(perfume['name'], str):
+            if query in perfume['name'].lower():
+                name_match = True
+                match_score += 8
         
         # Verificar coincidencia en marca
         if 'Brand' in perfume and isinstance(perfume['Brand'], str):
-            brand_match = query in perfume['Brand'].lower()
+            brand = perfume['Brand'].lower()
+            if query in brand:
+                brand_match = True
+                match_score += 5
+                if query == brand:
+                    match_score += 15  # Coincidencia exacta con la marca
         
-        if name_match or brand_match:
-            results.append(perfume)
+        # Búsqueda en campos adicionales
+        # Verificar coincidencia en notas (mainaccords)
+        for i in range(1, 6):
+            accord_key = f'mainaccord{i}'
+            if accord_key in perfume and perfume[accord_key] and isinstance(perfume[accord_key], str):
+                if query in perfume[accord_key].lower():
+                    match_found = True
+                    match_score += 3
+        
+        # Verificar coincidencia en Top, Middle, Base
+        for section in ['Top', 'Middle', 'Base']:
+            if section in perfume and perfume[section] and isinstance(perfume[section], str):
+                if query in perfume[section].lower():
+                    match_found = True
+                    match_score += 2
+        
+        # Verificar coincidencia en perfumista
+        for perfumer_key in ['Perfumer1', 'Perfumer2']:
+            if perfumer_key in perfume and perfume[perfumer_key] and isinstance(perfume[perfumer_key], str):
+                if query in perfume[perfumer_key].lower():
+                    match_found = True
+                    match_score += 4
+        
+        # Si hay coincidencia en cualquier campo, verificar filtros adicionales
+        if name_match or brand_match or match_found:
+            # Aplicar filtros
+            meets_filters = True
+            
+            # Filtro de género
+            if gender_filters:
+                gender_match = False
+                if 'Gender' in perfume and perfume['Gender']:
+                    gender_value = perfume['Gender'].lower()
+                    for gender_filter in gender_filters:
+                        if gender_filter.lower() in gender_value:
+                            gender_match = True
+                            break
+                if not gender_match:
+                    meets_filters = False
+            
+            # Filtro de valoración mínima
+            if min_rating and meets_filters:
+                if 'Rating Value' in perfume and perfume['Rating Value']:
+                    try:
+                        rating_value = float(str(perfume['Rating Value']).replace(',', '.'))
+                        if rating_value < float(min_rating):
+                            meets_filters = False
+                    except (ValueError, TypeError):
+                        meets_filters = False
+                else:
+                    meets_filters = False
+            
+            # Filtro de votos mínimos
+            if min_votes and meets_filters:
+                if 'Rating Count' in perfume and perfume['Rating Count']:
+                    try:
+                        if isinstance(perfume['Rating Count'], (int, float)):
+                            votes_count = int(perfume['Rating Count'])
+                        else:
+                            votes_count = int(perfume['Rating Count'])
+                        if votes_count < int(min_votes):
+                            meets_filters = False
+                    except (ValueError, TypeError):
+                        meets_filters = False
+                else:
+                    meets_filters = False
+            
+            # Filtro de año desde
+            if year_from and meets_filters:
+                if 'Year' in perfume and perfume['Year']:
+                    try:
+                        if isinstance(perfume['Year'], (int, float)):
+                            year_value = int(perfume['Year'])
+                        else:
+                            year_value = int(float(str(perfume['Year']).replace(',', '.')))
+                        if year_value < int(year_from):
+                            meets_filters = False
+                    except (ValueError, TypeError):
+                        meets_filters = False
+                else:
+                    meets_filters = False
+            
+            # Filtro de año hasta
+            if year_to and meets_filters:
+                if 'Year' in perfume and perfume['Year']:
+                    try:
+                        if isinstance(perfume['Year'], (int, float)):
+                            year_value = int(perfume['Year'])
+                        else:
+                            year_value = int(float(str(perfume['Year']).replace(',', '.')))
+                        if year_value > int(year_to):
+                            meets_filters = False
+                    except (ValueError, TypeError):
+                        meets_filters = False
+                else:
+                    meets_filters = False
+            
+            # Filtro de notas
+            if note_filters and meets_filters:
+                has_note = False
+                # Buscar en mainaccords
+                for i in range(1, 6):
+                    accord_key = f'mainaccord{i}'
+                    if accord_key in perfume and perfume[accord_key]:
+                        for note in note_filters:
+                            if note.lower() in str(perfume[accord_key]).lower():
+                                has_note = True
+                                break
+                        if has_note:
+                            break
+
+                        if not has_note:
+                             meets_filters = False
+            
+            # Si cumple con todos los filtros, añadir a resultados
+            if meets_filters:
+                perfume_copy = perfume.copy()
+                
+                # Preparar valores para ordenamiento
+                try:
+                    if 'Rating Value' in perfume:
+                        perfume_copy['rating_float'] = float(str(perfume['Rating Value']).replace(',', '.'))
+                    else:
+                        perfume_copy['rating_float'] = 0
+                        
+                    if 'Rating Count' in perfume:
+                        if isinstance(perfume['Rating Count'], (int, float)):
+                            perfume_copy['rating_count_int'] = int(perfume['Rating Count'])
+                        else:
+                            perfume_copy['rating_count_int'] = int(perfume['Rating Count'])
+                    else:
+                        perfume_copy['rating_count_int'] = 0
+                        
+                    if 'Year' in perfume and perfume['Year']:
+                        if isinstance(perfume['Year'], (int, float)):
+                            perfume_copy['year_int'] = int(perfume['Year'])
+                        else:
+                            perfume_copy['year_int'] = int(float(str(perfume['Year']).replace(',', '.')))
+                    else:
+                        perfume_copy['year_int'] = 0
+                except (ValueError, TypeError):
+                    # Asignar valores predeterminados si hay error
+                    perfume_copy['rating_float'] = 0
+                    perfume_copy['rating_count_int'] = 0
+                    perfume_copy['year_int'] = 0
+                
+                perfume_copy['match_score'] = match_score
+                results.append(perfume_copy)
+    
+    # Ordenar resultados según el criterio seleccionado
+    if sort_by == 'rating':
+        results = sorted(results, key=lambda x: x['rating_float'], reverse=True)
+    elif sort_by == 'votes':
+        results = sorted(results, key=lambda x: x['rating_count_int'], reverse=True)
+    elif sort_by == 'year':
+        results = sorted(results, key=lambda x: x['year_int'], reverse=True)
+    elif sort_by == 'year_asc':
+        results = sorted(results, key=lambda x: x['year_int'])
+    else:  # default: relevance
+        results = sorted(results, key=lambda x: x['match_score'], reverse=True)
+    
+    # Calcular paginación
+    total_results = len(results)
+    total_pages = (total_results + per_page - 1) // per_page  # Redondeo hacia arriba
+    start_idx = (page - 1) * per_page
+    end_idx = min(start_idx + per_page, total_results)
+    current_page_results = results[start_idx:end_idx]
     
     return render_template('search_results.html',
                           query=query,
-                          results=results[:20],  # Limitar a 20 resultados
+                          results=current_page_results,
+                          total_results=total_results,
+                          current_page=page,
+                          total_pages=total_pages,
+                          selected_filters=selected_filters,
+                          filter_params=filter_params,
+                          sort_by=sort_by,
+                          popular_notes=popular_notes_list,
                           get_perfume_image_url=get_perfume_image_url)
+
+# Función para obtener las notas más populares
+def get_popular_notes(limit=15):
+    """Obtiene las notas más populares para los filtros"""
+    popular_notes = [
+        'woody', 'amber', 'vanilla', 'citrus', 'musky',
+        'floral', 'sweet', 'powdery', 'fresh', 'spicy',
+        'fruity', 'aromatic', 'bergamot', 'rose', 'jasmine',
+        'sandalwood', 'oud', 'leather', 'lavender', 'patchouli'
+    ]
+    
+    return popular_notes[:limit] 
+
 
 @app.route('/api/perfumes')
 def api_perfumes():
