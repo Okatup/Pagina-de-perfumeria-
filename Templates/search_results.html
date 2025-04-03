@@ -12,39 +12,67 @@
         <div class="row">
             {% for perfume in results %}
                 <div class="col-md-4 mb-4">
-                    <div class="card perfume-card">
-                        <!-- Añadir enlace al perfume individual -->
-                        <a href="/perfume/{{ loop.index0 }}" class="text-decoration-none text-dark">
+                    <div class="card perfume-card h-100">
+                        <!-- Usar ID de perfume si está disponible, o índice como fallback -->
+                        <a href="/perfume/{% if perfume.perfume_id %}{{ perfume.perfume_id }}{% else %}{{ loop.index0 }}{% endif %}" class="text-decoration-none text-dark">
+                            <!-- Imagen del perfume -->
+                            <div class="text-center p-3">
+                                <img src="{{ get_perfume_image_url(perfume) }}" class="card-img-top perfume-image" alt="Imagen del perfume" style="max-height: 200px; object-fit: contain;">
+                            </div>
+                            
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    {% if perfume.name %}
+                                    {% if perfume.Brand and perfume.Perfume %}
+                                        {{ perfume.Brand }} {{ perfume.Perfume }}
+                                    {% elif perfume.name %}
                                         {{ perfume.name }}
-                                    {% elif perfume.title %}
-                                        {{ perfume.title }}
                                     {% else %}
                                         Perfume
                                     {% endif %}
                                 </h5>
                                 
-                                {% if perfume.brand %}
-                                    <h6 class="card-subtitle mb-2 text-muted">{{ perfume.brand }}</h6>
+                                {% if perfume.Brand %}
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ perfume.Brand }}</h6>
                                 {% endif %}
                                 
-                                {% if perfume.rating %}
+                                {% if perfume['Rating Value'] %}
                                     <p class="card-text">
-                                        <strong>Rating:</strong> {{ perfume.rating }}
-                                        {% for i in range(5) %}
-                                            {% if i < perfume.rating|int %}
+                                        <strong>Rating:</strong> 
+                                        {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+                                        {{ rating }}
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= (rating|float)|round(0, 'floor') %}
                                                 <span class="text-warning">★</span>
                                             {% else %}
                                                 <span class="text-secondary">☆</span>
                                             {% endif %}
                                         {% endfor %}
+                                        ({{ perfume['Rating Count'] }})
                                     </p>
                                 {% endif %}
                                 
-                                {% if perfume.gender %}
-                                    <p class="card-text"><strong>Género:</strong> {{ perfume.gender }}</p>
+                                {% if perfume.Gender %}
+                                    <p class="card-text"><strong>Género:</strong> {{ perfume.Gender }}</p>
+                                {% endif %}
+                                
+                                {% if perfume.Year %}
+                                    <p class="card-text"><strong>Año:</strong> {{ perfume.Year|int }}</p>
+                                {% endif %}
+                                
+                                <!-- Notas principales -->
+                                {% if perfume.mainaccord1 or perfume.mainaccord2 or perfume.mainaccord3 %}
+                                    <p class="card-text"><strong>Notas principales:</strong></p>
+                                    <div class="mb-2">
+                                        {% if perfume.mainaccord1 %}
+                                            <span class="badge bg-primary">{{ perfume.mainaccord1 }}</span>
+                                        {% endif %}
+                                        {% if perfume.mainaccord2 %}
+                                            <span class="badge bg-info">{{ perfume.mainaccord2 }}</span>
+                                        {% endif %}
+                                        {% if perfume.mainaccord3 %}
+                                            <span class="badge bg-secondary">{{ perfume.mainaccord3 }}</span>
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
                             </div>
                         </a>
@@ -57,5 +85,10 @@
             No se encontraron perfumes para "{{ query }}". Intenta con otra búsqueda.
         </div>
     {% endif %}
+    
+    <!-- Botón para volver -->
+    <div class="text-center mt-4 mb-5">
+        <a href="/" class="btn btn-primary">Volver al inicio</a>
+    </div>
 </div>
 {% endblock %}
