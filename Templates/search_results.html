@@ -16,6 +16,9 @@
                 <div class="card-body">
                     <form id="filter-form" method="get" action="{{ url_for('search') }}">
                         <input type="hidden" name="q" value="{{ query }}">
+                        {% if sort_by and sort_by != 'relevance' %}
+                        <input type="hidden" name="sort" value="{{ sort_by }}">
+                        {% endif %}
                         
                         <!-- Género -->
                         <div class="mb-3">
@@ -114,14 +117,22 @@
                 <div class="mb-3 d-flex justify-content-between align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Ordenar por: {% if sort_by == 'rating' %}Valoración{% elif sort_by == 'year' %}Año{% elif sort_by == 'votes' %}Popularidad{% else %}Relevancia{% endif %}
+                            Ordenar por: {% if sort_by == 'rating' %}Valoración{% elif sort_by == 'year' %}Año (nuevo a antiguo){% elif sort_by == 'year_asc' %}Año (antiguo a nuevo){% elif sort_by == 'votes' %}Popularidad{% else %}Relevancia{% endif %}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                            <li><a class="dropdown-item {% if sort_by == 'relevance' %}active{% endif %}" href="{{ url_for('search', q=query, sort='relevance', **filter_params) }}">Relevancia</a></li>
-                            <li><a class="dropdown-item {% if sort_by == 'rating' %}active{% endif %}" href="{{ url_for('search', q=query, sort='rating', **filter_params) }}">Valoración</a></li>
-                            <li><a class="dropdown-item {% if sort_by == 'votes' %}active{% endif %}" href="{{ url_for('search', q=query, sort='votes', **filter_params) }}">Popularidad</a></li>
-                            <li><a class="dropdown-item {% if sort_by == 'year' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year', **filter_params) }}">Año (nuevo a antiguo)</a></li>
-                            <li><a class="dropdown-item {% if sort_by == 'year_asc' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year_asc', **filter_params) }}">Año (antiguo a nuevo)</a></li>
+                            {% set sort_params = {} %}
+                            {% if gender_filters %}{% set _ = sort_params.update({'gender': gender_filters}) %}{% endif %}
+                            {% if min_rating %}{% set _ = sort_params.update({'min_rating': min_rating}) %}{% endif %}
+                            {% if min_votes %}{% set _ = sort_params.update({'min_votes': min_votes}) %}{% endif %}
+                            {% if year_from %}{% set _ = sort_params.update({'year_from': year_from}) %}{% endif %}
+                            {% if year_to %}{% set _ = sort_params.update({'year_to': year_to}) %}{% endif %}
+                            {% if note_filters %}{% set _ = sort_params.update({'notes': note_filters}) %}{% endif %}
+                            
+                            <li><a class="dropdown-item {% if sort_by == 'relevance' or not sort_by %}active{% endif %}" href="{{ url_for('search', q=query, page=1, **sort_params) }}">Relevancia</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'rating' %}active{% endif %}" href="{{ url_for('search', q=query, sort='rating', page=1, **sort_params) }}">Valoración</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'votes' %}active{% endif %}" href="{{ url_for('search', q=query, sort='votes', page=1, **sort_params) }}">Popularidad</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'year' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year', page=1, **sort_params) }}">Año (nuevo a antiguo)</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'year_asc' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year_asc', page=1, **sort_params) }}">Año (antiguo a nuevo)</a></li>
                         </ul>
                     </div>
                     
@@ -273,9 +284,18 @@
                 {% if total_pages > 1 %}
                 <nav aria-label="Navegación de resultados">
                     <ul class="pagination justify-content-center mt-4">
+                        {% set pagination_params = {} %}
+                        {% if gender_filters %}{% set _ = pagination_params.update({'gender': gender_filters}) %}{% endif %}
+                        {% if min_rating %}{% set _ = pagination_params.update({'min_rating': min_rating}) %}{% endif %}
+                        {% if min_votes %}{% set _ = pagination_params.update({'min_votes': min_votes}) %}{% endif %}
+                        {% if year_from %}{% set _ = pagination_params.update({'year_from': year_from}) %}{% endif %}
+                        {% if year_to %}{% set _ = pagination_params.update({'year_to': year_to}) %}{% endif %}
+                        {% if note_filters %}{% set _ = pagination_params.update({'notes': note_filters}) %}{% endif %}
+                        {% if sort_by and sort_by != 'relevance' %}{% set _ = pagination_params.update({'sort': sort_by}) %}{% endif %}
+                        
                         {% if current_page > 1 %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page-1, **filter_params) }}" aria-label="Anterior">
+                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page-1, **pagination_params) }}" aria-label="Anterior">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -291,13 +311,13 @@
                         
                         {% for page_num in range(start_page, end_page) %}
                             <li class="page-item {% if page_num == current_page %}active{% endif %}">
-                                <a class="page-link" href="{{ url_for('search', q=query, page=page_num, **filter_params) }}">{{ page_num }}</a>
+                                <a class="page-link" href="{{ url_for('search', q=query, page=page_num, **pagination_params) }}">{{ page_num }}</a>
                             </li>
                         {% endfor %}
                         
                         {% if current_page < total_pages %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page+1, **filter_params) }}" aria-label="Siguiente">
+                                <a class="page-link" href="{{ url_for('search', q=query, page=current_page+1, **pagination_params) }}" aria-label="Siguiente">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
