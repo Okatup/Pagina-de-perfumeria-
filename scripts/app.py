@@ -5,6 +5,10 @@ import os
 import random
 import pandas as pd
 import sys
+import pandas as pd
+from unidecode import unidecode
+from flask import Flask, request, render_template
+
 
 # Ajustar la ruta para encontrar el módulo recommender
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -305,6 +309,34 @@ def get_perfume_image_url(perfume):
     
     return placeholder_url
 
+df = pd.read_csv('data/fra_perfumes_con_imagenes.csv')
+def norm(x):
+    return unidecode(str(x)).lower()
+
+@app.route('/resultados')
+def resultados():
+    q      = request.args.get('query', '').strip()
+    genero = request.args.get('genero', '').strip()   # "Masculino" o "Femenino"
+
+    # --- filtro por búsqueda (marca o nombre) ---
+    mask = (
+        df['brand'].str.contains(q, case=False, na=False) |
+        df['name'].str.contains(q, case=False, na=False)
+    )
+
+    # --- filtro por género ---
+    if genero:
+        mask &= df['gender'].apply(norm) == norm(genero)
+
+    resultados = df[mask].head(60)          # paginación simple
+    return render_template(
+        'resultados.html',
+        perfumes=resultados.to_dict('records'),
+        query=q,
+        genero=genero
+    )
+
+
 def get_top_rated_perfumes(perfumes, min_ratings=10, limit=8):
     """
     Obtiene los perfumes mejor valorados con un mínimo de valoraciones
@@ -539,7 +571,7 @@ def search():
                 if 'Gender' in perfume and perfume['Gender']:
                     gender_value = perfume['Gender'].lower()
                     for gender_filter in gender_filters:
-                        if gender_filter.lower() in gender_value:
+                        if gender_value == gender_filter.lower():
                             gender_match = True
                             break
                 if not gender_match:
