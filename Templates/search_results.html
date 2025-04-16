@@ -8,89 +8,32 @@
     
     <div class="row">
         <!-- Columna lateral de filtros -->
-        <!-- Panel lateral de filtros (versión elegante) -->
-<div class="col-lg-3 mb-4">
-    <div class="filter-sidebar p-4 rounded shadow-sm">
+    <!-- Filtros para pantallas grandes -->
+    <div class="col-lg-3 mb-4 d-none d-lg-block">
+        <div class="filter-sidebar p-4 rounded shadow-sm bg-white border">
         <h5 class="filter-title mb-3 text-uppercase text-muted">Filtros</h5>
-        <form id="filter-form" method="get" action="{{ url_for('search') }}">
-            <input type="hidden" name="q" value="{{ query }}">
-            {% if sort_by and sort_by != 'votes' %}
-                <input type="hidden" name="sort" value="{{ sort_by }}">
-            {% endif %}
-
-            <!-- Género -->
-            <div class="filter-group mb-4">
-                <h6 class="filter-subtitle text-secondary mb-2">Género</h6>
-                {% for gender in ['women', 'men', 'unisex'] %}
-                <div class="form-check custom-checkbox mb-1">
-                    <input class="form-check-input" type="checkbox" name="gender" value="{{ gender }}" id="gender-{{ gender }}" {% if gender in selected_filters.gender %}checked{% endif %}>
-                    <label class="form-check-label small text-muted" for="gender-{{ gender }}">{{ gender.capitalize() }}</label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Valoración mínima -->
-            <div class="filter-group mb-4">
-                <h6 class="filter-subtitle text-secondary mb-2">Valoración mínima</h6>
-                <select class="form-select custom-select" id="min-rating" name="min_rating">
-                    <option value="">Cualquiera</option>
-                    <option value="4.0" {% if selected_filters.min_rating == '4.0' %}selected{% endif %}>4+ estrellas</option>
-                    <option value="3.5" {% if selected_filters.min_rating == '3.5' %}selected{% endif %}>3.5+ estrellas</option>
-                    <option value="3.0" {% if selected_filters.min_rating == '3.0' %}selected{% endif %}>3+ estrellas</option>
-                    <option value="2.5" {% if selected_filters.min_rating == '2.5' %}selected{% endif %}>2.5+ estrellas</option>
-                </select>
-            </div>
-
-            <!-- Valoraciones mínimas -->
-            <div class="filter-group mb-4">
-                <h6 class="filter-subtitle text-secondary mb-2">Mínimo de valoraciones</h6>
-                <select class="form-select custom-select" id="min-votes" name="min_votes">
-                    <option value="">Cualquiera</option>
-                    <option value="100" {% if selected_filters.min_votes == '100' %}selected{% endif %}>100+</option>
-                    <option value="50" {% if selected_filters.min_votes == '50' %}selected{% endif %}>50+</option>
-                    <option value="20" {% if selected_filters.min_votes == '20' %}selected{% endif %}>20+</option>
-                    <option value="10" {% if selected_filters.min_votes == '10' %}selected{% endif %}>10+</option>
-                </select>
-            </div>
-
-            <!-- Rango de años -->
-            <div class="filter-group mb-4">
-                <h6 class="filter-subtitle text-secondary mb-2">Año de lanzamiento</h6>
-                <div class="row">
-                    <div class="col-6">
-                        <input type="number" class="form-control" placeholder="Desde" min="1900" max="2025" name="year_from" value="{{ selected_filters.year_from or '' }}">
-                    </div>
-                    <div class="col-6">
-                        <input type="number" class="form-control" placeholder="Hasta" min="1900" max="2025" name="year_to" value="{{ selected_filters.year_to or '' }}">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notas principales -->
-            <div class="filter-group mb-4">
-                <h6 class="filter-subtitle text-secondary mb-2">Notas principales</h6>
-                <div class="note-checkboxes">
-                    {% for note in popular_notes %}
-                    <div class="form-check custom-checkbox mb-1">
-                        <input class="form-check-input" type="checkbox" name="notes" value="{{ note }}" id="note-{{ loop.index }}" {% if note in selected_filters.notes %}checked{% endif %}>
-                        <label class="form-check-label small text-muted" for="note-{{ loop.index }}">{{ note }}</label>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="mt-2 small">
-                    <a href="#" id="show-more-notes">Ver más notas...</a>
-                </div>
-            </div>
-
-            <!-- Botones -->
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-dark btn-sm rounded-pill">Aplicar filtros</button>
-                <a href="{{ url_for('search', q=query) }}" class="btn btn-outline-secondary btn-sm rounded-pill">Limpiar</a>
-            </div>
-        </form>
+        {% include 'partials/filter_form.html' %}
+        </div>
     </div>
-</div>
+  
+    
+    <!-- Offcanvas para móviles -->
+    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileFilters" aria-labelledby="mobileFiltersLabel">
+        <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="mobileFiltersLabel">Filtros</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body">
+        {% include 'partials/filter_form.html' %}
+        </div>
+    </div>
 
+    <!-- Botón de filtros en móviles -->
+    <div class="d-lg-none text-end mb-3">
+        <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileFilters">
+        <i class="bi bi-funnel"></i> Filtros
+        </button>
+    </div>
         
         <!-- Columna principal de resultados -->
         <div class="col-lg-9">
