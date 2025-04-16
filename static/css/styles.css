@@ -85,3 +85,30 @@
 .hero-left-content .btn {
     animation: fadeInUp 1.4s ease forwards;
 }
+
+
+.card-body h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+    transition: transform 0.3s ease;
+  }
+
+.card:hover {
+    transform: translateY(-4px);
+  }
+  
+.card .text-muted {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+  }
+  

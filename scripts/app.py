@@ -102,7 +102,10 @@ def load_data():
             
             # Crear campo 'name' para compatibilidad con el código existente
             perfume['name'] = f"{perfume['Brand']} {perfume['Perfume']}".strip()
-            
+            # Normalizar y formatear nombres y marcas
+            perfume['Perfume'] = format_perfume_name(perfume['Perfume'])
+            perfume['Brand'] = format_text(perfume['Brand'])
+            perfume['name'] = f"{perfume['Brand']} {perfume['Perfume']}".strip()
             # Crear campo 'notes' para compatibilidad
             notes_list = []
             

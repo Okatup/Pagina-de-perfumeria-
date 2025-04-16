@@ -31,7 +31,8 @@
                                  alt="{{ perfume.Brand }} {{ perfume.Perfume }}"
                                  style="height: 250px; object-fit: contain;">
                             <div class="card-body">
-                                <h5 class="card-title text-truncate">{{ perfume.Brand }} {{ perfume.Perfume }}</h5>
+                                <small class="text-muted text-uppercase d-block mb-1">{{ perfume.Brand }}</small>
+                                <h5 class="card-title text-truncate fw-semibold">{{ perfume.Perfume }}</h5>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="rating">
                                         {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
