@@ -191,3 +191,60 @@
   .note-ribbon.tobacco     { background-color: #f3e5ab; color: #5d4037; }  /* tabaco cálido */
   .note-ribbon.herbal      { background-color: #e8f5e9; color: #2e7d32; }  /* herbal intenso */
   
+
+  .filter-sidebar {
+    background-color: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 0.75rem;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.filter-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+.filter-subtitle {
+    font-weight: 500;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.custom-checkbox .form-check-input {
+    border-radius: 0.25rem;
+    border-color: #ccc;
+}
+
+.custom-checkbox .form-check-input:checked {
+    background-color: #111;
+    border-color: #111;
+}
+
+.custom-select,
+.form-select {
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.note-checkboxes {
+    max-height: 160px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.note-checkboxes::-webkit-scrollbar {
+    width: 4px;
+}
+.note-checkboxes::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 10px;
+}
+
+.filter-group {
+    margin-bottom: 2rem;
+}
