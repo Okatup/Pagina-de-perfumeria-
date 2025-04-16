@@ -111,4 +111,56 @@
     font-weight: 600;
     color: #111;
   }
+
+  .note-ribbon {
+    position: absolute;
+    right: 0.75rem;
+    top: 0.75rem;
+    padding: 4px 12px;
+    background-color: rgba(255,255,255,0.85);
+    color: #333;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 1rem 0 0 1rem;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 3;
+    display: inline-block;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  
+  .note-ribbon + .note-ribbon {
+    top: calc(0.75rem + 30px); /* siguiente */
+  }
+  
+  .note-ribbon + .note-ribbon + .note-ribbon {
+    top: calc(0.75rem + 60px); /* tercera */
+  }
+  
+  .note-ribbon .note-text {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Opcional: colores específicos */
+  .note-ribbon.rose         { background-color: #fce4ec; color: #b71c1c; }   /* rosado tenue + rojo vino */
+  .note-ribbon.woody        { background-color: #e5d8c0; color: #4e342e; }   /* beige madera + marrón */
+  .note-ribbon.vanilla      { background-color: #fdf6e3; color: #8d6e63; }   /* crema + marrón suave */
+  .note-ribbon.fruity       { background-color: #fff1e6; color: #ad1457; }   /* durazno claro + frambuesa */
+  .note-ribbon.aromatic     { background-color: #e8f5e9; color: #2e7d32; }   /* verde menta suave + hoja oscura */
+  .note-ribbon.floral       { background-color: #fce8f0; color: #880e4f; }   /* rosado pálido + fucsia tenue */
+  .note-ribbon.aquatic      { background-color: #e3f2fd; color: #01579b; }   /* celeste agua + azul profundo */
+  .note-ribbon.spicy        { background-color: #fbe9e7; color: #d84315; }   /* coral claro + terracota */
+  .note-ribbon.musky        { background-color: #ede7f6; color: #4527a0; }   /* lavanda pálido + violeta sobrio */
+  .note-ribbon.citrus       { background-color: #fffde7; color: #f57f17; }   /* amarillo limón claro + mostaza */
+  .note-ribbon.green        { background-color: #edf7ed; color: #388e3c; }   /* verde seco claro + hoja intensa */
+  .note-ribbon.oud          { background-color: #eceff1; color: #3e2723; }   /* gris claro + madera oscura */
+  .note-ribbon.leather      { background-color: #efebe9; color: #5d4037; }   /* marrón suave + cuero */
+  .note-ribbon.animalic     { background-color: #f3e5f5; color: #6a1b9a; }   /* violeta grisáceo + morado oscuro */
+  .note-ribbon.sweet        { background-color: #fff8e1; color: #bf360c; }   /* pastel miel + caramelo oscuro */
+  .note-ribbon.amber        { background-color: #fbe9e7; color: #8d6e63; }   /* ámbar pálido + marrón claro */
+  .note-ribbon.warm-spicy   { background-color: #fbe9e7; color: #bf360c; }   /* coral claro + especia intensa */
+  .note-ribbon.white-floral { background-color: #fafafa; color: #455a64; }   /* blanco humo + gris azulado */
+  .note-ribbon.ozonic       { background-color: #e0f7fa; color: #006064; }   /* azul hielo + azul petróleo */
   
