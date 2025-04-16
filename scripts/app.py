@@ -8,6 +8,8 @@ import sys
 import pandas as pd
 from unidecode import unidecode
 from flask import Flask, request, render_template
+from scripts.utils import normalize, format_text
+
 
 
 # Ajustar la ruta para encontrar el módulo recommender
@@ -313,29 +315,6 @@ df = pd.read_csv('data/fra_perfumes_con_imagenes.csv')
 def norm(x):
     return unidecode(str(x)).lower()
 
-@app.route('/resultados')
-def resultados():
-    q      = request.args.get('query', '').strip()
-    genero = request.args.get('genero', '').strip()   # "Masculino" o "Femenino"
-
-    # --- filtro por búsqueda (marca o nombre) ---
-    mask = (
-        df['brand'].str.contains(q, case=False, na=False) |
-        df['name'].str.contains(q, case=False, na=False)
-    )
-
-    # --- filtro por género ---
-    if genero:
-        mask &= df['gender'].apply(norm) == norm(genero)
-
-    resultados = df[mask].head(60)          # paginación simple
-    return render_template(
-        'resultados.html',
-        perfumes=resultados.to_dict('records'),
-        query=q,
-        genero=genero
-    )
-
 
 def get_top_rated_perfumes(perfumes, min_ratings=10, limit=8):
     """
@@ -383,6 +362,13 @@ def get_top_rated_perfumes(perfumes, min_ratings=10, limit=8):
     
     # Devolver los mejores hasta el límite
     return sorted_perfumes[:limit]
+
+# Formatear el nombre del perfume
+def format_perfume_name(name):
+    if not isinstance(name, str):
+        return ""
+    return name.replace('-', ' ').title()
+
 
 # Rutas
 @app.route('/')
@@ -684,6 +670,11 @@ def search():
                     perfume_copy['year_int'] = 0
                 
                 perfume_copy['match_score'] = match_score
+                # Formatear nombre del perfume
+                raw_name = perfume_copy.get('name') or perfume_copy.get('Perfume') or ''
+                perfume_copy['formatted_name'] = format_text(raw_name)
+                raw_brand = perfume_copy.get('Brand') or ''
+                perfume_copy['formatted_brand'] = format_text(raw_brand)
                 results.append(perfume_copy)
     
     # Ordenar resultados según el criterio seleccionado
@@ -766,9 +757,16 @@ def perfume_detail(perfume_id):
     if perfume:
         # Obtener URL de imagen para el perfume
         image_url = get_perfume_image_url(perfume)
+
+        # Formatear nombre del perfume
+        # Formatear nombre y marca principal
+        raw_name = perfume.get('name') or perfume.get('Perfume') or ''
+        perfume['formatted_name'] = format_text(raw_name)
+        perfume['formatted_brand'] = format_text(perfume.get('Brand', ''))
         
         # Encontrar perfumes similares (por marca o notas)
         similar_perfumes = []
+
         
         # Por marca
         if 'Brand' in perfume and perfume['Brand']:
@@ -813,6 +811,11 @@ def perfume_detail(perfume_id):
             if season in perfume and isinstance(perfume[season], (int, float)):
                 seasons_data[season] = perfume[season]
         
+        for sp in similar_perfumes:
+            raw_name = sp.get('name') or sp.get('Perfume') or ''
+            sp['formatted_name'] = format_text(raw_name)
+            sp['formatted_brand'] = format_text(sp.get('Brand', ''))
+
         return render_template('perfume_detail.html', 
                                perfume=perfume,
                                similar_perfumes=similar_perfumes[:5],

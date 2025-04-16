@@ -19,13 +19,7 @@
                 <img src="{{ image_url }}" class="card-img-top" alt="Imagen de perfume" style="max-height: 400px; object-fit: contain;">
                 <div class="card-body text-center">
                     <h5 class="card-title">
-                        {% if perfume.Brand and perfume.Perfume %}
-                            {{ perfume.Brand }} {{ perfume.Perfume }}
-                        {% elif perfume.name %}
-                            {{ perfume.name }}
-                        {% else %}
-                            Perfume
-                        {% endif %}
+                        {{ perfume.formatted_name }}
                     </h5>
                     
                     {% if perfume.Brand %}
@@ -219,15 +213,17 @@
                                          alt="Imagen de perfume similar"
                                          style="max-height: 150px; object-fit: contain;">
                                     <div class="card-body text-center p-2">
+                                        <h6 class="text-muted small mb-0 text-truncate">
+                                            {{ similar.formatted_brand }}
+                                        </h6>
                                         <h6 class="card-title small mb-0">
-                                            {% if similar.Brand and similar.Perfume %}
-                                                {{ similar.Brand|truncate(12, true) }} {{ similar.Perfume|truncate(12, true) }}
-                                            {% elif similar.name %}
-                                                {{ similar.name|truncate(20, true) }}
+                                            {% if similar.formatted_name %}
+                                                {{ similar.formatted_name|truncate(24, true) }}
                                             {% else %}
                                                 Perfume
                                             {% endif %}
                                         </h6>
+                                        
                                     </div>
                                 </div>
                             </a>

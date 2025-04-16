@@ -163,11 +163,9 @@
                                     
                                     <div class="card-body">
                                         <h5 class="card-title text-truncate">
-                                            {% if perfume.Brand and perfume.Perfume %}
-                                                {{ perfume.Brand }} {{ perfume.Perfume }}
-                                            {% elif perfume.name %}
-                                                {{ perfume.name }}
-                                            {% else %}
+                                            {% if perfume.formatted_name %}
+                                                {{ perfume.formatted_name }}
+                                             {% else %}
                                                 Perfume
                                             {% endif %}
                                         </h5>
