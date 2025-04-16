@@ -445,7 +445,7 @@ def search():
     year_from = request.args.get('year_from', '')
     year_to = request.args.get('year_to', '')
     note_filters = request.args.getlist('notes')
-    sort_by = request.args.get('sort', 'relevance')
+    sort_by = request.args.get('sort', 'votes')
     
     # Guardar filtros seleccionados para la plantilla
     selected_filters = {

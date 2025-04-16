@@ -128,9 +128,8 @@
                             {% if year_to %}{% set _ = sort_params.update({'year_to': year_to}) %}{% endif %}
                             {% if note_filters %}{% set _ = sort_params.update({'notes': note_filters}) %}{% endif %}
                             
-                            <li><a class="dropdown-item {% if sort_by == 'relevance' or not sort_by %}active{% endif %}" href="{{ url_for('search', q=query, page=1, **sort_params) }}">Relevancia</a></li>
-                            <li><a class="dropdown-item {% if sort_by == 'rating' %}active{% endif %}" href="{{ url_for('search', q=query, sort='rating', page=1, **sort_params) }}">Valoración</a></li>
                             <li><a class="dropdown-item {% if sort_by == 'votes' %}active{% endif %}" href="{{ url_for('search', q=query, sort='votes', page=1, **sort_params) }}">Popularidad</a></li>
+                            <li><a class="dropdown-item {% if sort_by == 'rating' %}active{% endif %}" href="{{ url_for('search', q=query, sort='rating', page=1, **sort_params) }}">Valoración</a></li>
                             <li><a class="dropdown-item {% if sort_by == 'year' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year', page=1, **sort_params) }}">Año (nuevo a antiguo)</a></li>
                             <li><a class="dropdown-item {% if sort_by == 'year_asc' %}active{% endif %}" href="{{ url_for('search', q=query, sort='year_asc', page=1, **sort_params) }}">Año (antiguo a nuevo)</a></li>
                         </ul>
