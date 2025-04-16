@@ -695,6 +695,12 @@ def search():
     start_idx = (page - 1) * per_page
     end_idx = min(start_idx + per_page, total_results)
     current_page_results = results[start_idx:end_idx]
+
+    # Clonamos los filtros para usarlos en los enlaces de paginación
+    pagination_params = filter_params.copy()
+
+    # Aseguramos que el criterio de ordenamiento también se mantenga
+    pagination_params['sort'] = sort_by
     
     return render_template('search_results.html',
                           query=query,
@@ -704,6 +710,7 @@ def search():
                           total_pages=total_pages,
                           selected_filters=selected_filters,
                           filter_params=filter_params,
+                          pagination_params=pagination_params,
                           sort_by=sort_by,
                           popular_notes=popular_notes_list,
                           get_perfume_image_url=get_perfume_image_url)

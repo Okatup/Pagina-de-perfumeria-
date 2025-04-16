@@ -2,7 +2,7 @@
 
 {% block title %}Resultados de búsqueda: {{ query }}{% endblock %}
 
-{% block content %}
+{% block content %}|
 <div class="container mt-5">
     <h1 class="mb-4">Resultados para "{{ query }}"</h1>
     
@@ -282,14 +282,6 @@
                 {% if total_pages > 1 %}
                 <nav aria-label="Navegación de resultados">
                     <ul class="pagination justify-content-center mt-4">
-                        {% set pagination_params = {} %}
-                        {% if gender_filters %}{% set _ = pagination_params.update({'gender': gender_filters}) %}{% endif %}
-                        {% if min_rating %}{% set _ = pagination_params.update({'min_rating': min_rating}) %}{% endif %}
-                        {% if min_votes %}{% set _ = pagination_params.update({'min_votes': min_votes}) %}{% endif %}
-                        {% if year_from %}{% set _ = pagination_params.update({'year_from': year_from}) %}{% endif %}
-                        {% if year_to %}{% set _ = pagination_params.update({'year_to': year_to}) %}{% endif %}
-                        {% if note_filters %}{% set _ = pagination_params.update({'notes': note_filters}) %}{% endif %}
-                        {% if sort_by and sort_by != 'relevance' %}{% set _ = pagination_params.update({'sort': sort_by}) %}{% endif %}
                         
                         {% if current_page > 1 %}
                             <li class="page-item">
