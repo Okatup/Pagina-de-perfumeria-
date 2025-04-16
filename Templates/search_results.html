@@ -149,7 +149,7 @@
                 <div class="row" id="results-grid">
                     {% for perfume in results %}
                         <div class="col-md-4 col-lg-4 mb-4">
-                            <div class="card perfume-card h-100 shadow-sm hover-shadow">
+                            <div class="card perfume-card h-100 shadow-sm hover-shadow position-relative">
                                 <!-- Usar ID de perfume si está disponible, o índice como fallback -->
                                 <a href="/perfume/{% if perfume.perfume_id %}{{ perfume.perfume_id }}{% else %}{{ loop.index0 }}{% endif %}" class="text-decoration-none text-dark">
                                     <!-- Imagen del perfume -->
@@ -196,17 +196,11 @@
                                         {% endif %}
                                         
                                         <!-- Notas principales -->
-                                        <div class="mt-2">
-                                            {% if perfume.mainaccord1 %}
-                                                <span class="badge bg-primary">{{ perfume.mainaccord1 }}</span>
-                                            {% endif %}
-                                            {% if perfume.mainaccord2 %}
-                                                <span class="badge bg-info text-dark">{{ perfume.mainaccord2 }}</span>
-                                            {% endif %}
-                                            {% if perfume.mainaccord3 %}
-                                                <span class="badge bg-secondary">{{ perfume.mainaccord3 }}</span>
-                                            {% endif %}
-                                        </div>
+                                        <div class="ribbon-container position-absolute top-0 end-0 p-2">
+                                            {% for note in [perfume.mainaccord1, perfume.mainaccord2, perfume.mainaccord3, perfume.mainaccord4, perfume.mainaccord5] if note %}
+                                              <span class="note-ribbon {{ note|lower|replace(' ', '-') }}">{{ note }}</span>
+                                            {% endfor %}
+                                        </div>                                          
                                     </div>
                                 </a>
                             </div>

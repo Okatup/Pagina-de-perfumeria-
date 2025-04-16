@@ -16,62 +16,66 @@
 
   
 
-<div class="container my-5">
+  <div class="container my-5">
     <!-- Sección de perfumes mejor valorados -->
     <div class="mb-5">
         <h2 class="text-center mb-4">Los más valorados</h2>
-        
         <div class="row">
             {% for perfume in top_rated %}
-                <div class="col-md-3 mb-4">
-                    <div class="card perfume-card h-100 shadow-sm border-0 position-relative overflow-hidden">
+            <div class="col-md-3 mb-4">
+                <div class="card perfume-card h-100 shadow-sm border-0 position-relative overflow-hidden">
                     <a href="/perfume/{{ perfume.perfume_id or loop.index0 }}" class="text-decoration-none">
-                        
-                        <!-- Imagen con cintas de notas -->
-                        <div class="position-relative">
-                        <img src="{{ get_perfume_image_url(perfume) }}" 
-                            class="card-img-top p-3 perfume-img" 
-                            alt="{{ perfume.Brand }} {{ perfume.Perfume }}"
-                            style="height: 250px; object-fit: contain;">
-                        
-                        <!-- Cintas de notas -->
-                        {% for note in [perfume.mainaccord1, perfume.mainaccord2, perfume.mainaccord3] if note %}
-                        <div class="note-ribbon {{ note|lower|replace(' ', '-') }}">
-                            <span class="note-text">{{ note }}</span>
-                        </div>
-                        {% endfor %}
-                        </div>
-                
+
+                        <!-- Imagen con cintas -->
+                        <div class="position-relative" style="padding-top: 48px;">
+                            <img src="{{ get_perfume_image_url(perfume) }}" 
+                                 class="card-img-top p-3 perfume-img" 
+                                 alt="{{ perfume.Brand }} {{ perfume.Perfume }}"
+                                 style="height: 250px; object-fit: contain;">
+
+                            <!-- Cintas de notas -->
+                            <div class="ribbon-container">
+                                {% for note in [perfume.mainaccord1, perfume.mainaccord2, perfume.mainaccord3] if note %}
+                                <div class="note-ribbon {{ note|lower|replace(' ', '-') }}">
+                                    <span class="note-text">{{ note }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div> <!-- FIN position-relative -->
+
                         <!-- Info del perfume -->
                         <div class="card-body">
-                        <small class="text-muted text-uppercase d-block mb-1">{{ perfume.Brand }}</small>
-                        <h5 class="card-title fw-bold text-truncate">{{ perfume.Perfume }}</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="rating">
-                            {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
-                            {% set rating_float = rating|float %}
-                            {% for i in range(1, 6) %}
-                                {% if i <= rating_float|round(0, 'floor') %}
-                                <span class="text-warning">★</span>
-                                {% else %}
-                                <span class="text-secondary">☆</span>
-                                {% endif %}
-                            {% endfor %}
-                            <span class="ms-1 text-muted">({{ perfume['Rating Count'] }})</span>
+                            <small class="text-muted text-uppercase d-block mb-1">{{ perfume.Brand }}</small>
+                            <h5 class="card-title fw-bold text-truncate">{{ perfume.Perfume }}</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="rating">
+                                    {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+                                    {% set rating_float = rating|float %}
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= rating_float|round(0, 'floor') %}
+                                            <span class="text-warning">★</span>
+                                        {% else %}
+                                            <span class="text-secondary">☆</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1 text-muted">({{ perfume['Rating Count'] }})</span>
+                                </div>
+                                <span class="badge bg-light text-dark">{{ perfume.Gender }}</span>
                             </div>
-                            <span class="badge bg-light text-dark">{{ perfume.Gender }}</span>
-                        </div>
                         </div>
                         <div class="card-footer bg-white">
-                        <small class="text-muted">{% if perfume.Year %}{{ perfume.Year|int }}{% endif %}</small>
+                            <small class="text-muted">
+                                {% if perfume.Year %}{{ perfume.Year|int }}{% endif %}
+                            </small>
                         </div>
                     </a>
-                    </div>
                 </div>
-              
+            </div>
             {% endfor %}
         </div>
     </div>
+</div>
+
 
     <h2 class="text-center mb-4">Perfumes por Temporada</h2>
     

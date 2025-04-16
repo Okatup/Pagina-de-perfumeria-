@@ -113,35 +113,34 @@
   }
 
   .note-ribbon {
-    position: absolute;
-    right: 0.75rem;
-    top: 0.75rem;
-    padding: 4px 12px;
-    background-color: rgba(255,255,255,0.85);
-    color: #333;
+    padding: 3px 10px;
+    border-radius: 1rem 0 0 1rem;
     font-size: 0.75rem;
     font-weight: 500;
-    border-radius: 1rem 0 0 1rem;
-    margin-bottom: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    z-index: 3;
-    display: inline-block;
+    background-color: rgba(255,255,255,0.85);
+    color: #333;
     white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: all 0.2s ease;
-  }
-  
-  .note-ribbon + .note-ribbon {
-    top: calc(0.75rem + 30px); /* siguiente */
-  }
-  
-  .note-ribbon + .note-ribbon + .note-ribbon {
-    top: calc(0.75rem + 60px); /* tercera */
   }
   
   .note-ribbon .note-text {
     display: flex;
     align-items: center;
   }
+
+  .ribbon-container {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 2;
+    gap: 6px;
+    max-width: 60%; /* Esto evita que rompa el layout */
+  }
+  
   
   /* Opcional: colores específicos */
   .note-ribbon.rose         { background-color: #fce4ec; color: #b71c1c; }   /* rosado tenue + rojo vino */
@@ -163,4 +162,25 @@
   .note-ribbon.warm-spicy   { background-color: #fbe9e7; color: #bf360c; }   /* coral claro + especia intensa */
   .note-ribbon.white-floral { background-color: #fafafa; color: #455a64; }   /* blanco humo + gris azulado */
   .note-ribbon.ozonic       { background-color: #e0f7fa; color: #006064; }   /* azul hielo + azul petróleo */
+  .note-ribbon.honey        { background-color: #fff8dc; color: #c97b00; }  /* crema miel + ámbar dorado */
+  .note-ribbon.green        { background-color: #e6f4ea; color: #2e7d32; }  /* verde pasto + hoja viva */
+  .note-ribbon.violet       { background-color: #f3e5f5; color: #6a1b9a; }  /* lavanda pálida + violeta fuerte */
+  .note-ribbon.lavender     { background-color: #ede7f6; color: #512da8; }  /* lavanda grisáceo + púrpura */
+  .note-ribbon.smoky        { background-color: #eceff1; color: #37474f; }  /* gris humo + gris azulado oscuro */
+  .note-ribbon.powdery      { background-color: #f5f5f5; color: #6d4c41; }  /* blanco talco + marrón suave */
+  .note-ribbon.bergamot     { background-color: #f1f8e9; color: #558b2f; }  /* verde limón pálido + lima fuerte */
+  .note-ribbon.jasmine      { background-color: #fffde7; color: #f57f17; }  /* blanco flor + mostaza floral */
+  .note-ribbon.fresh-spicy  { background-color: #e0f2f1; color: #00796b; }  /* menta suave + verde profundo */
+  .note-ribbon.coffee      { background-color: #efebe9; color: #4e342e; }  /* marrón suave */
+  .note-ribbon.cinnamon    { background-color: #fbe9e7; color: #a84300; }  /* canela cálida */
+  .note-ribbon.cacao       { background-color: #e0d3c1; color: #3e2723; }  /* cacao terroso */
+  .note-ribbon.iris        { background-color: #ede7f6; color: #5e35b1; }  /* violeta lavanda */
+  .note-ribbon.balsamic    { background-color: #f1f8e9; color: #33691e; }  /* verde resinoso */
+  .note-ribbon.earthy      { background-color: #fbe9e7; color: #5d4037; }  /* tierra húmeda */
+  .note-ribbon.fresh       { background-color: #e0f7fa; color: #00695c; }  /* fresco acuático */
+  .note-ribbon.camphor     { background-color: #e3f2fd; color: #0277bd; }  /* azul mentolado */
+  .note-ribbon.chocolate   { background-color: #efebe9; color: #3e2723; }  /* chocolate amargo */
+  .note-ribbon.patchouli   { background-color: #e8f5e9; color: #4e342e; }  /* verde oscuro */
+  .note-ribbon.tobacco     { background-color: #f3e5ab; color: #5d4037; }  /* tabaco cálido */
+  .note-ribbon.herbal      { background-color: #e8f5e9; color: #2e7d32; }  /* herbal intenso */
   
