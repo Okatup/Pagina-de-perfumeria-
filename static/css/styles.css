@@ -140,6 +140,13 @@
     gap: 6px;
     max-width: 60%; /* Esto evita que rompa el layout */
   }
+
+  .note-ribbon:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    filter: brightness(1.05);
+    z-index: 5;
+  }
   
   
   /* Opcional: colores específicos */
