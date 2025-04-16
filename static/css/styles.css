@@ -1,0 +1,87 @@
+.hero-banner {
+    height: 100vh;
+    background-image: url("https://fimgs.net/himg/o.kdQBpSyvjXb.jpg");
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 5%;
+    padding-right: 5%;
+    position: relative;
+}
+.hero-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.hero-left-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    text-align: left;
+    color: #fff;
+}
+
+.hero-left-content h1 {
+    font-size: 4.5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-left-content p {
+    font-size: 1.3rem;
+    margin-top: 1rem;
+    font-weight: 400;
+    color: #e0e0e0;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.hero-left-content .btn {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    color: #333;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.hero-left-content .btn:hover {
+    background-color: #e4e4e4;
+    color: #111;
+}
+
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-left-content h1 {
+    animation: fadeInUp 1s ease forwards;
+}
+
+.hero-left-content p {
+    animation: fadeInUp 1.2s ease forwards;
+}
+
+.hero-left-content .btn {
+    animation: fadeInUp 1.4s ease forwards;
+}

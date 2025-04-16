@@ -28,7 +28,7 @@ except ImportError:
             return []
 
 # Configuración para encontrar las plantillas con T mayúscula
-app = Flask(__name__, template_folder='../Templates')
+app = Flask(__name__, template_folder='../Templates', static_folder='../static')
 
 # Variables globales para almacenar datos en caché
 _perfumes = None
