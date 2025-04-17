@@ -12,230 +12,106 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row">
-        <!-- Columna con la imagen -->
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ image_url }}" class="card-img-top" alt="Imagen de perfume" style="max-height: 400px; object-fit: contain;">
-                <div class="card-body text-center">
-                    <h5 class="card-title">
-                        {{ perfume.formatted_name }}
-                    </h5>
-                    
-                    {% if perfume.Brand %}
-                        <h6 class="card-subtitle mb-2 text-muted">{{ perfume.Brand }}</h6>
-                    {% endif %}
-                    
-                    {% if perfume['Rating Value'] %}
-                        <div class="mt-3">
-                            {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
-                            {% set rating_float = rating|float %}
-                            {% for i in range(1, 6) %}
-                                {% if i <= rating_float|round(0, 'floor') %}
-                                    <span class="text-warning h5">★</span>
-                                {% else %}
-                                    <span class="text-secondary h5">☆</span>
-                                {% endif %}
-                            {% endfor %}
-                            <span class="ms-2">({{ rating }})</span>
-                            {% if perfume['Rating Count'] %}
-                                <small class="d-block text-muted">{{ perfume['Rating Count'] }} valoraciones</small>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+  <div class="row align-items-start">
+    <!-- Imagen del perfume -->
+    <div class="col-md-4 mb-4 text-center">
+      <div class="bg-light p-4 rounded shadow-sm">
+        <img src="{{ image_url }}" alt="Imagen de perfume" class="img-fluid" style="max-height: 400px; object-fit: contain;">
+      </div>
+    </div>
 
-        <!-- Añade esto justo debajo de la imagen -->
-        <div class="alert alert-info">
-            URL de imagen: {{ image_url }}
+    <!-- Info del perfume -->
+    <div class="col-md-8">
+      <div class="mb-2 text-uppercase small fw-semibold text-muted">{{ perfume.Brand }}</div>
+      <h1 class="fw-bold display-5">{{ perfume.Perfume }}</h1>
+
+      <!-- Rating + año -->
+      <div class="d-flex align-items-center mb-2">
+        {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+        {% set rating_float = rating|float %}
+        {% for i in range(1, 6) %}
+          {% if i <= rating_float|round(0, 'floor') %}
+            <span class="text-warning h5 mb-0 me-1">★</span>
+          {% else %}
+            <span class="text-secondary h5 mb-0 me-1">☆</span>
+          {% endif %}
+        {% endfor %}
+        <small class="text-muted ms-2">({{ perfume['Rating Count'] }})</small>
+        {% if perfume.Year %}
+          <small class="text-muted ms-3"><i class="bi bi-calendar3"></i> {{ perfume.Year|int }}</small>
+        {% endif %}
+      </div>
+
+      <!-- Notas visuales tipo barras -->
+    <div class="d-flex flex-column gap-2 mt-4">
+      {% set accord_weights = [100, 70, 50] %}
+      {% for note, width in [(perfume.mainaccord1, 100), (perfume.mainaccord2, 70), (perfume.mainaccord3, 50)] if note %}
+        <div class="note-ribbon {{ note|lower|replace(' ', '-') }} px-3 py-2 rounded shadow-sm text-capitalize text-center"
+            style="width: {{ width }}%; min-width: 100px;">
+          {{ note }}
         </div>
-                
-        <!-- Columna con detalles -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="card-title mb-4">Detalles</h2>
-                    
-                    <!-- Información adicional -->
-                    <div class="row mb-4">
-                        {% if perfume.Gender %}
-                            <div class="col-md-4 mb-3">
-                                <h5>Género</h5>
-                                <p>{{ perfume.Gender }}</p>
-                            </div>
-                        {% endif %}
-                        
-                        {% if perfume.Year %}
-                            <div class="col-md-4 mb-3">
-                                <h5>Año</h5>
-                                <p>{{ perfume.Year|int }}</p>
-                            </div>
-                        {% endif %}
-                        
-                        {% if perfume.Country %}
-                            <div class="col-md-4 mb-3">
-                                <h5>País</h5>
-                                <p>{{ perfume.Country }}</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Temporadas -->
-                    {% if seasons %}
-                        <div class="mb-4">
-                            <h5>Puntuación por temporada</h5>
-                            <div class="row">
-                                {% for season, score in seasons.items() %}
-                                    <div class="col-md-3 mb-2">
-                                        <strong>
-                                            {% if season == 'spring' %}
-                                                Primavera
-                                            {% elif season == 'summer' %}
-                                                Verano
-                                            {% elif season == 'fall' %}
-                                                Otoño
-                                            {% elif season == 'winter' %}
-                                                Invierno
-                                            {% else %}
-                                                {{ season|capitalize }}
-                                            {% endif %}
-                                        </strong>
-                                        <div class="progress mt-1">
-                                            <div class="progress-bar" role="progressbar" 
-                                                style="width: {{ score }}%;" 
-                                                aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100">
-                                                {{ score }}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Pirámide olfativa -->
-                    <div class="mb-4">
-                        <h5>Pirámide olfativa</h5>
-                        <div class="row">
-                            {% if perfume.Top %}
-                                <div class="col-md-4">
-                                    <h6 class="text-center">Notas de Salida</h6>
-                                    <div class="card p-2 bg-light">
-                                        {% for note in perfume.Top.split(',') %}
-                                            <span class="badge bg-primary m-1">{{ note.strip() }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                            
-                            {% if perfume.Middle %}
-                                <div class="col-md-4">
-                                    <h6 class="text-center">Notas de Corazón</h6>
-                                    <div class="card p-2 bg-light">
-                                        {% for note in perfume.Middle.split(',') %}
-                                            <span class="badge bg-info text-dark m-1">{{ note.strip() }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                            
-                            {% if perfume.Base %}
-                                <div class="col-md-4">
-                                    <h6 class="text-center">Notas de Fondo</h6>
-                                    <div class="card p-2 bg-light">
-                                        {% for note in perfume.Base.split(',') %}
-                                            <span class="badge bg-secondary m-1">{{ note.strip() }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Acordes principales -->
-                    <div class="mb-4">
-                        <h5>Acordes principales</h5>
-                        <div>
-                            {% if perfume.mainaccord1 %}
-                                <span class="badge bg-primary p-2 m-1">{{ perfume.mainaccord1 }}</span>
-                            {% endif %}
-                            {% if perfume.mainaccord2 %}
-                                <span class="badge bg-info text-dark p-2 m-1">{{ perfume.mainaccord2 }}</span>
-                            {% endif %}
-                            {% if perfume.mainaccord3 %}
-                                <span class="badge bg-secondary p-2 m-1">{{ perfume.mainaccord3 }}</span>
-                            {% endif %}
-                            {% if perfume.mainaccord4 %}
-                                <span class="badge bg-success p-2 m-1">{{ perfume.mainaccord4 }}</span>
-                            {% endif %}
-                            {% if perfume.mainaccord5 %}
-                                <span class="badge bg-warning text-dark p-2 m-1">{{ perfume.mainaccord5 }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Perfumistas -->
-                    {% if perfume.Perfumer1 %}
-                        <div class="mb-4">
-                            <h5>Perfumista(s)</h5>
-                            <p>
-                                {{ perfume.Perfumer1 }}
-                                {% if perfume.Perfumer2 %}
-                                    , {{ perfume.Perfumer2 }}
-                                {% endif %}
-                            </p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+      {% endfor %}
     </div>
-    
-    <!-- Perfumes similares -->
-    {% if similar_perfumes %}
-        <div class="card mt-4">
-            <div class="card-header">
-                <h3 class="mb-0">Perfumes similares</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for similar in similar_perfumes %}
-                        <div class="col-md-2 mb-3">
-                            <!-- Usar perfume_id para el enlace si está disponible -->
-                            <a href="/perfume/{% if similar.perfume_id %}{{ similar.perfume_id }}{% elif similar.id %}{{ similar.id }}{% else %}{{ loop.index0 }}{% endif %}" 
-                               class="text-decoration-none text-dark">
-                                <div class="card h-100">
-                                    <!-- Usar función get_perfume_image_url para la imagen -->
-                                    <img src="{{ get_perfume_image_url(similar) }}" 
-                                         class="card-img-top" 
-                                         alt="Imagen de perfume similar"
-                                         style="max-height: 150px; object-fit: contain;">
-                                    <div class="card-body text-center p-2">
-                                        <h6 class="text-muted small mb-0 text-truncate">
-                                            {{ similar.formatted_brand }}
-                                        </h6>
-                                        <h6 class="card-title small mb-0">
-                                            {% if similar.formatted_name %}
-                                                {{ similar.formatted_name|truncate(24, true) }}
-                                            {% else %}
-                                                Perfume
-                                            {% endif %}
-                                        </h6>
-                                        
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    {% endif %}
-    
-    <div class="text-center mt-4 mb-5">
-        <a href="javascript:history.back()" class="btn btn-secondary">Volver</a>
+
     </div>
+  </div>
+
+<!-- Pirámide olfativa -->
+<div class="row mt-5">
+  <div class="col-12">
+    <h3 class="h4 mb-4">Pirámide Olfativa</h3>
+    <div class="row g-4">
+      <!-- Notas de Salida -->
+      <div class="col-md-4">
+        <div class="card h-100 border-0 bg-light">
+          <div class="card-body text-center">
+            <h4 class="h5 mb-3">Notas de Salida</h4>
+            <p class="text-muted mb-0">
+              {% if perfume.Top %}
+                {{ perfume.Top }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas de Corazón -->
+      <div class="col-md-4">
+        <div class="card h-100 border-0 bg-light">
+          <div class="card-body text-center">
+            <h4 class="h5 mb-3">Notas de Corazón</h4>
+            <p class="text-muted mb-0">
+              {% if perfume.Middle %}
+                {{ perfume.Middle }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas de Fondo -->
+      <div class="col-md-4">
+        <div class="card h-100 border-0 bg-light">
+          <div class="card-body text-center">
+            <h4 class="h5 mb-3">Notas de Fondo</h4>
+            <p class="text-muted mb-0">
+              {% if perfume.Base %}
+                {{ perfume.Base }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 {% endblock %}
+
+
