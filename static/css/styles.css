@@ -281,7 +281,41 @@
   
 
 
-
+.perfume-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .ribbon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    z-index: 10;
+  }
+  
+  .note-ribbon {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-weight: 500;
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .note-text {
+    display: inline-block;
+  }
+  
+  /* Ejemplo de colores (esto deberías tenerlo ya) */
+  .note-ribbon.woody { background-color: #e5d8c0; color: #4e342e; }
+  .note-ribbon.amber { background-color: #fbe9e7; color: #8d6e63; }
+  .note-ribbon.vanilla { background-color: #fdf6e3; color: #8d6e63; }
+  /* ...y el resto */
+  
+  
   
   
   /* Se mantiene tu lista de colores, asegúrate de que esté cargada */

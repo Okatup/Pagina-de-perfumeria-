@@ -11,17 +11,49 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<!-- Animaciones CSS -->
+<style>
+.fade-in {
+  animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-delay-1 { animation-delay: 0.1s; }
+.fade-delay-2 { animation-delay: 0.3s; }
+.fade-delay-3 { animation-delay: 0.5s; }
+.fade-delay-4 { animation-delay: 0.7s; }
+
+.perfume-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.perfume-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+</style>
+
+<div class="container mt-5 fade-in fade-delay-1">
   <div class="row align-items-start">
     <!-- Imagen del perfume -->
-    <div class="col-md-4 mb-4 text-center">
+    <div class="col-md-4 mb-4 text-center fade-in fade-delay-1">
       <div class="bg-light p-4 rounded shadow-sm">
         <img src="{{ image_url }}" alt="Imagen de perfume" class="img-fluid" style="max-height: 400px; object-fit: contain;">
       </div>
     </div>
 
     <!-- Info del perfume -->
-    <div class="col-md-8">
+    <div class="col-md-8 fade-in fade-delay-2">
       <div class="mb-2 text-uppercase small fw-semibold text-muted">{{ perfume.Brand }}</div>
       <h1 class="fw-bold display-5">{{ perfume.Perfume }}</h1>
 
@@ -43,75 +75,101 @@
       </div>
 
       <!-- Notas visuales tipo barras -->
-    <div class="d-flex flex-column gap-2 mt-4">
-      {% set accord_weights = [100, 70, 50] %}
-      {% for note, width in [(perfume.mainaccord1, 100), (perfume.mainaccord2, 70), (perfume.mainaccord3, 50)] if note %}
-        <div class="note-ribbon {{ note|lower|replace(' ', '-') }} px-3 py-2 rounded shadow-sm text-capitalize text-center"
-            style="width: {{ width }}%; min-width: 100px;">
-          {{ note }}
+      <div class="d-flex flex-column gap-2 mt-4">
+        {% for note, width in [(perfume.mainaccord1, 100), (perfume.mainaccord2, 70), (perfume.mainaccord3, 50)] if note %}
+          <div class="note-ribbon {{ note|lower|replace(' ', '-') }} px-3 py-2 rounded shadow-sm text-capitalize text-center"
+               style="width: {{ width }}%; min-width: 100px;">
+            {{ note }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pirámide olfativa -->
+  <div class="row mt-5 fade-in fade-delay-3">
+    <div class="col-12">
+      <h3 class="h4 mb-4">Pirámide Olfativa</h3>
+      <div class="row g-4">
+        <!-- Notas de Salida -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 bg-light">
+            <div class="card-body text-center">
+              <h4 class="h5 mb-3">Notas de Salida</h4>
+              <p class="text-muted mb-0">
+                {{ perfume.Top or '-' }}
+              </p>
+            </div>
+          </div>
         </div>
+
+        <!-- Notas de Corazón -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 bg-light">
+            <div class="card-body text-center">
+              <h4 class="h5 mb-3">Notas de Corazón</h4>
+              <p class="text-muted mb-0">
+                {{ perfume.Middle or '-' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notas de Fondo -->
+        <div class="col-md-4">
+          <div class="card h-100 border-0 bg-light">
+            <div class="card-body text-center">
+              <h4 class="h5 mb-3">Notas de Fondo</h4>
+              <p class="text-muted mb-0">
+                {{ perfume.Base or '-' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recomendados -->
+  {% if similar_perfumes %}
+  <hr class="my-5">
+  <div class="mt-5 fade-in fade-delay-4">
+    <h3 class="fw-bold text-center mb-4">Perfumes Recomendados</h3>
+    <div class="row justify-content-center">
+      {% for similar in similar_perfumes[:6] %}
+      <div class="col-md-2 col-6 mb-4">
+        <a href="/perfume/{{ similar.perfume_id or similar.id }}" class="text-decoration-none text-dark">
+          <div class="card h-100 shadow-sm perfume-card position-relative">
+            <!-- Notas principales (ribbons) -->
+            <div class="ribbon-container position-absolute top-0 end-0 p-2">
+              {% for note in [similar.mainaccord1, similar.mainaccord2, similar.mainaccord3] if note %}
+              <div class="note-ribbon {{ note|lower|replace(' ', '-') }}">
+                <span class="note-text">{{ note }}</span>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Imagen -->
+            <img src="{{ get_perfume_image_url(similar) }}" 
+                 alt="Perfume" 
+                 class="card-img-top p-2" 
+                 style="height: 160px; object-fit: contain;">
+
+            <!-- Texto -->
+            <div class="card-body text-center p-2">
+              <small class="text-uppercase text-muted d-block">{{ similar.Brand or similar.brand }}</small>
+              <div class="fw-semibold text-truncate small">{{ similar.Perfume or similar.name }}</div>
+            </div>
+          </div>
+        </a>
+      </div>
       {% endfor %}
     </div>
-
-    </div>
   </div>
-
-<!-- Pirámide olfativa -->
-<div class="row mt-5">
-  <div class="col-12">
-    <h3 class="h4 mb-4">Pirámide Olfativa</h3>
-    <div class="row g-4">
-      <!-- Notas de Salida -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 bg-light">
-          <div class="card-body text-center">
-            <h4 class="h5 mb-3">Notas de Salida</h4>
-            <p class="text-muted mb-0">
-              {% if perfume.Top %}
-                {{ perfume.Top }}
-              {% else %}
-                -
-              {% endif %}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notas de Corazón -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 bg-light">
-          <div class="card-body text-center">
-            <h4 class="h5 mb-3">Notas de Corazón</h4>
-            <p class="text-muted mb-0">
-              {% if perfume.Middle %}
-                {{ perfume.Middle }}
-              {% else %}
-                -
-              {% endif %}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notas de Fondo -->
-      <div class="col-md-4">
-        <div class="card h-100 border-0 bg-light">
-          <div class="card-body text-center">
-            <h4 class="h5 mb-3">Notas de Fondo</h4>
-            <p class="text-muted mb-0">
-              {% if perfume.Base %}
-                {{ perfume.Base }}
-              {% else %}
-                -
-              {% endif %}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  {% endif %}
 </div>
 {% endblock %}
+
+
 
 

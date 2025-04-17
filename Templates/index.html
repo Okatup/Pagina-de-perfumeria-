@@ -3,7 +3,7 @@
 {% block title %}MisPerfumes - Inicio{% endblock %}
 
 {% block content %}
-
+<div class="page-animate">
 
 <section class="hero-banner">
     <div class="hero-left-content">
@@ -11,164 +11,169 @@
       <p class="lead">Explora más de 5000 fragancias de las mejores marcas del mundo</p>
       <a href="/search?q=" class="btn btn-light btn-lg mt-3">Comienza ahora</a>
     </div>
-  </section>
-  
+</section>
 
-  
-
-  <div class="container my-5">
-    <!-- Sección de perfumes mejor valorados -->
-    <div class="mb-5">
-        <h2 class="text-center mb-4">Los más valorados</h2>
-        <div class="row">
-            {% for perfume in top_rated %}
-            <div class="col-md-3 mb-4">
-                <div class="card perfume-card h-100 shadow-sm border-0 position-relative overflow-hidden">
-                    <a href="/perfume/{{ perfume.perfume_id or loop.index0 }}" class="text-decoration-none">
-
-                        <!-- Imagen con cintas -->
-                        <div class="position-relative" style="padding-top: 48px;">
-                            <img src="{{ get_perfume_image_url(perfume) }}" 
-                                 class="card-img-top p-3 perfume-img" 
-                                 alt="{{ perfume.Brand }} {{ perfume.Perfume }}"
-                                 style="height: 250px; object-fit: contain;">
-
-                            <!-- Cintas de notas -->
-                            <div class="ribbon-container">
-                                {% for note in [perfume.mainaccord1, perfume.mainaccord2, perfume.mainaccord3] if note %}
-                                <div class="note-ribbon {{ note|lower|replace(' ', '-') }}">
-                                    <span class="note-text">{{ note }}</span>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div> <!-- FIN position-relative -->
-
-                        <!-- Info del perfume -->
-                        <div class="card-body">
-                            <small class="text-muted text-uppercase d-block mb-1">{{ perfume.Brand }}</small>
-                            <h5 class="card-title fw-bold text-truncate">{{ perfume.Perfume }}</h5>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div class="rating">
-                                    {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
-                                    {% set rating_float = rating|float %}
-                                    {% for i in range(1, 6) %}
-                                        {% if i <= rating_float|round(0, 'floor') %}
-                                            <span class="text-warning">★</span>
-                                        {% else %}
-                                            <span class="text-secondary">☆</span>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <span class="ms-1 text-muted">({{ perfume['Rating Count'] }})</span>
-                                </div>
-                                <span class="badge bg-light text-dark">{{ perfume.Gender }}</span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white">
-                            <small class="text-muted">
-                                {% if perfume.Year %}{{ perfume.Year|int }}{% endif %}
-                            </small>
-                        </div>
-                    </a>
+<div class="container my-5">
+  <!-- Sección de perfumes mejor valorados -->
+  <div class="mb-5">
+    <h2 class="text-center mb-4">Los más valorados</h2>
+    <div class="row">
+      {% for perfume in top_rated %}
+      <div class="col-md-3 mb-4">
+        <div class="card perfume-card h-100 shadow-sm border-0 position-relative overflow-hidden">
+          <a href="/perfume/{{ perfume.perfume_id or loop.index0 }}" class="text-decoration-none">
+            <div class="position-relative" style="padding-top: 48px;">
+              <img src="{{ get_perfume_image_url(perfume) }}" 
+                   class="card-img-top p-3 perfume-img" 
+                   alt="{{ perfume.Brand }} {{ perfume.Perfume }}"
+                   style="height: 250px; object-fit: contain;">
+              <div class="ribbon-container">
+                {% for note in [perfume.mainaccord1, perfume.mainaccord2, perfume.mainaccord3] if note %}
+                <div class="note-ribbon {{ note|lower|replace(' ', '-') }}">
+                  <span class="note-text">{{ note }}</span>
                 </div>
+                {% endfor %}
+              </div>
             </div>
-            {% endfor %}
+
+            <div class="card-body">
+              <small class="text-muted text-uppercase d-block mb-1">{{ perfume.Brand }}</small>
+              <h5 class="card-title fw-bold text-truncate">{{ perfume.Perfume }}</h5>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="rating">
+                  {% set rating = perfume['Rating Value']|string|replace(',', '.') %}
+                  {% set rating_float = rating|float %}
+                  {% for i in range(1, 6) %}
+                    {% if i <= rating_float|round(0, 'floor') %}
+                      <span class="text-warning">★</span>
+                    {% else %}
+                      <span class="text-secondary">☆</span>
+                    {% endif %}
+                  {% endfor %}
+                  <span class="ms-1 text-muted">({{ perfume['Rating Count'] }})</span>
+                </div>
+                <span class="badge bg-light text-dark">{{ perfume.Gender }}</span>
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <small class="text-muted">
+                {% if perfume.Year %}{{ perfume.Year|int }}{% endif %}
+              </small>
+            </div>
+          </a>
         </div>
+      </div>
+      {% endfor %}
     </div>
+  </div>
 </div>
 
+<h2 class="text-center mb-4">Perfumes por Temporada</h2>
 
-    <h2 class="text-center mb-4">Perfumes por Temporada</h2>
-    
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card season-card shadow-sm" onclick="location.href='/season/spring'">
-                <div class="card-body text-center">
-                    <h3 class="card-title">Primavera</h3>
-                    <p class="card-text">Fragancias florales y frescas para la temporada de renovación</p>
-                    <img src="https://via.placeholder.com/150?text=Primavera" class="img-fluid rounded-circle mb-3" alt="Primavera">
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4">
-            <div class="card season-card shadow-sm" onclick="location.href='/season/summer'">
-                <div class="card-body text-center">
-                    <h3 class="card-title">Verano</h3>
-                    <p class="card-text">Aromas cítricos y ligeros perfectos para los días calurosos</p>
-                    <img src="https://via.placeholder.com/150?text=Verano" class="img-fluid rounded-circle mb-3" alt="Verano">
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4">
-            <div class="card season-card shadow-sm" onclick="location.href='/season/fall'">
-                <div class="card-body text-center">
-                    <h3 class="card-title">Otoño</h3>
-                    <p class="card-text">Fragancias especiadas y amaderadas para días más frescos</p>
-                    <img src="https://via.placeholder.com/150?text=Otoño" class="img-fluid rounded-circle mb-3" alt="Otoño">
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4">
-            <div class="card season-card shadow-sm" onclick="location.href='/season/winter'">
-                <div class="card-body text-center">
-                    <h3 class="card-title">Invierno</h3>
-                    <p class="card-text">Aromas cálidos y envolventes para la temporada más fría</p>
-                    <img src="https://via.placeholder.com/150?text=Invierno" class="img-fluid rounded-circle mb-3" alt="Invierno">
-                </div>
-            </div>
-        </div>
+<div class="row">
+  <div class="col-md-3 mb-4">
+    <div class="card season-card shadow-sm" onclick="location.href='/season/spring'">
+      <div class="card-body text-center">
+        <h3 class="card-title">Primavera</h3>
+        <p class="card-text">Fragancias florales y frescas para la temporada de renovación</p>
+        <img src="https://via.placeholder.com/150?text=Primavera" class="img-fluid rounded-circle mb-3" alt="Primavera">
+      </div>
     </div>
-    
-    <h2 class="text-center mb-4 mt-5">Notas Populares</h2>
-    
-    <div class="text-center mb-5">
-        {% for note in top_notes %}
-            <span class="badge bg-light text-dark p-2 m-1">{{ note }}</span>
-        {% endfor %}
-    </div>
-    
-    <div class="text-center mt-5">
-        <a href="/notes" class="btn btn-primary btn-lg">Explorar por Notas</a>
-    </div>
+  </div>
 
-    
-    <!-- Agregar este bloque en index.html, justo antes del final del container -->
-
-    <div class="bg-light p-5 rounded-3 text-center mt-5 mb-5">
-        <h2 class="mb-4">¿No sabes qué perfume elegir?</h2>
-        <p class="lead">Responde a un breve cuestionario y obtendrás recomendaciones personalizadas según tus gustos</p>
-        <a href="/preferences" class="btn btn-primary btn-lg mt-3">
-            <i class="bi bi-magic"></i> Descubre tu perfume ideal
-        </a>
+  <div class="col-md-3 mb-4">
+    <div class="card season-card shadow-sm" onclick="location.href='/season/summer'">
+      <div class="card-body text-center">
+        <h3 class="card-title">Verano</h3>
+        <p class="card-text">Aromas cítricos y ligeros perfectos para los días calurosos</p>
+        <img src="https://via.placeholder.com/150?text=Verano" class="img-fluid rounded-circle mb-3" alt="Verano">
+      </div>
     </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card season-card shadow-sm" onclick="location.href='/season/fall'">
+      <div class="card-body text-center">
+        <h3 class="card-title">Otoño</h3>
+        <p class="card-text">Fragancias especiadas y amaderadas para días más frescos</p>
+        <img src="https://via.placeholder.com/150?text=Otoño" class="img-fluid rounded-circle mb-3" alt="Otoño">
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card season-card shadow-sm" onclick="location.href='/season/winter'">
+      <div class="card-body text-center">
+        <h3 class="card-title">Invierno</h3>
+        <p class="card-text">Aromas cálidos y envolventes para la temporada más fría</p>
+        <img src="https://via.placeholder.com/150?text=Invierno" class="img-fluid rounded-circle mb-3" alt="Invierno">
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="text-center mb-4 mt-5">Notas Populares</h2>
+
+<div class="text-center mb-5">
+  {% for note in top_notes %}
+    <span class="badge bg-light text-dark p-2 m-1">{{ note }}</span>
+  {% endfor %}
+</div>
+
+<div class="text-center mt-5">
+  <a href="/notes" class="btn btn-primary btn-lg">Explorar por Notas</a>
+</div>
+
+<div class="bg-light p-5 rounded-3 text-center mt-5 mb-5">
+  <h2 class="mb-4">¿No sabes qué perfume elegir?</h2>
+  <p class="lead">Responde a un breve cuestionario y obtendrás recomendaciones personalizadas según tus gustos</p>
+  <a href="/preferences" class="btn btn-primary btn-lg mt-3">
+    <i class="bi bi-magic"></i> Descubre tu perfume ideal
+  </a>
+</div>
+
 </div>
 {% endblock %}
 
 {% block styles %}
 <style>
-    .hero-section {
-        background: linear-gradient(135deg, #6a3093 0%, #a044ff 100%);
-        padding: 80px 0;
-        margin-bottom: 30px;
-    }
+  .hero-section {
+    background: linear-gradient(135deg, #6a3093 0%, #a044ff 100%);
+    padding: 80px 0;
+    margin-bottom: 30px;
+  }
 
-    .season-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
-        height: 100%;
-    }
+  .season-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+  }
 
-    .season-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
+  .season-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
 
-    .hover-shadow:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        transition: all 0.3s ease;
+  .hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.3s ease;
+  }
+
+  /* ✨ Animación general de entrada */
+  @keyframes fadeSlideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
     }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .page-animate {
+    animation: fadeSlideUp 0.8s ease-out;
+  }
 </style>
 {% endblock %}
